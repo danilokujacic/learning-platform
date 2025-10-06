@@ -1,0 +1,159 @@
+### Java ###
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+replay_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+### Eclipse ###
+.classpath
+.project
+.settings/
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.loadpath
+.factorypath
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+### VS Code ###
+.vscode/
+*.code-workspace
+.history/
+
+### Spring Boot ###
+.spring-boot-devtools.properties
+HELP.md
+
+### Logs ###
+*.log
+logs/
+spring.log
+
+### OS ###
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+### Database ###
+*.db
+*.sqlite
+*.sqlite3
+
+### Docker ###
+*.pid
+*.seed
+*.pid.lock
+
+### Application ###
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Production and sensitive configuration files
+application-prod.yml
+application-prod.properties
+application-production.yml
+application-production.properties
+
+# Local development overrides
+application-local.yml
+application-local.properties
+
+# Files with actual secrets (use these for real passwords/keys)
+*-secret.yml
+*-secret.properties
+*-credentials.yml
+*-credentials.properties
+application-secrets.yml
+secrets.yml
+
+# Sensitive configuration
+secrets/
+credentials/
+
+### Build and Package ###
+dist/
+build/
+*.exe
+*.dmg
+*.pkg
+
+### Temporary Files ###
+*.tmp
+*.temp
+temp/
+tmp/
+
+### Node (if using any frontend) ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+### Certificates and Keys ###
+*.p12
+*.jks
+*.keystore
+*.pem
+*.key
+*.crt
+*.cer
+
+### Generated Files ###
+generated/
+generated-sources/
+generated-test-sources/
