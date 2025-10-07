@@ -21,6 +21,14 @@ spring:
         use_sql_comments: true
     open-in-view: false
 
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+          jwk-set-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+
 # Eureka Configuration (Shared)
 eureka:
   client:
