@@ -1,0 +1,30 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: course-service
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users
+    username: postgres
+    password: postgres
+
+  # JPA specific for user-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+eureka:
+  instance:
+    instance-id: ${spring.application.name}:${random.value}
+    metadata-map:
+      zone: zone1
+
+logging:
+  level:
+    com.example.userservice: DEBUG
+    org.hibernate.SQL: DEBUG

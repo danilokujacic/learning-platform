@@ -1,7 +1,7 @@
 server:
   port: 8081
 
-spring:
+spring: # Fixed indentation
   application:
     name: api-gateway
 
@@ -18,10 +18,10 @@ spring:
             - RemoveRequestHeader=Cookie
 
         # Route for Order Service
-        - id: order-service
-          uri: lb://order-service
+        - id: course-service
+          uri: lb://course-service
           predicates:
-            - Path=/api/orders/**
+            - Path=/api/courses/**
           filters:
             - TokenRelay=
             - RemoveRequestHeader=Cookie
@@ -37,7 +37,7 @@ spring:
         registration:
           keycloak:
             client-id: gateway-client
-            client-secret: {GATEWAY_CLIENT_SECRET}
+            client-secret: ${GATEWAY_CLIENT_SECRET}  # Fixed: $ instead of nothing
             scope:
               - openid
               - profile
@@ -46,13 +46,13 @@ spring:
             redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
         provider:
           keycloak:
-            issuer-uri: http://localhost:8080/realms/learning-platform
+            issuer-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
             user-name-attribute: preferred_username
 
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8080/realms/learning-platform
-          jwk-set-uri: http://localhost:8080/realms/learning-platform/protocol/openid-connect/certs
+          issuer-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+          jwk-set-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
 
 # Eureka Client Configuration
 eureka:
@@ -81,4 +81,3 @@ management:
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
-    org.springframework.security: DEBUG

@@ -25,6 +25,7 @@ public class SecurityConfig {
                 )
                 // Enable OAuth2 login for browser-based access
                 .oauth2Login(Customizer.withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(
                                 new RedirectServerAuthenticationEntryPoint("/oauth2/authorization/keycloak")
