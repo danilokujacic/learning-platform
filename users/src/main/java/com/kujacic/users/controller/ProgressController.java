@@ -4,6 +4,7 @@ import com.kujacic.users.dto.progress.ProgressRequestDTO;
 import com.kujacic.users.dto.progress.ProgressResponseDTO;
 import com.kujacic.users.service.ProgressService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -15,13 +16,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/users/progress")
+@RequiredArgsConstructor
 public class ProgressController {
 
-    private ProgressService progressService;
-
-    public ProgressController(ProgressService progressService) {
-        this.progressService = progressService;
-    }
+    private final ProgressService progressService;
 
     @PostMapping("")
     public ResponseEntity<ProgressResponseDTO> createProgress(@Valid @RequestBody ProgressRequestDTO progressRequest, @AuthenticationPrincipal Jwt jwt) {

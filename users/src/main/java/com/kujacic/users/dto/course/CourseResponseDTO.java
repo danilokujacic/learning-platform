@@ -13,6 +13,6 @@ import lombok.Setter;
 public class CourseResponseDTO {
 
     @JsonProperty("course_id")
-    private Integer course_id;
+    private Integer courseId;
 
 }
