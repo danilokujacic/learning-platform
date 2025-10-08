@@ -1,18 +1,9 @@
 # Shared configuration for ALL microservices
 
-# PostgreSQL Configuration (Shared)
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    hikari:
-      connection-timeout: 20000
-      maximum-pool-size: 10
-      minimum-idle: 5
-      idle-timeout: 300000
-      max-lifetime: 1200000
-      connection-test-query: SELECT 1
 
-  # JPA Configuration (Shared)
   jpa:
     properties:
       hibernate:
@@ -21,7 +12,14 @@ spring:
         use_sql_comments: true
     open-in-view: false
 
-# Eureka Configuration (Shared)
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
+          jwk-set-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
+
 eureka:
   client:
     service-url:
@@ -33,7 +31,6 @@ eureka:
     lease-renewal-interval-in-seconds: 10
     lease-expiration-duration-in-seconds: 30
 
-# Actuator Configuration (Shared)
 management:
   endpoints:
     web:
@@ -43,10 +40,6 @@ management:
     health:
       show-details: always
 
-# Keycloak Configuration (Shared)
-keycloak:
-  realm: your-realm
-  auth-server-url: http://localhost:8180
 
 # Logging (Shared)
 logging:
