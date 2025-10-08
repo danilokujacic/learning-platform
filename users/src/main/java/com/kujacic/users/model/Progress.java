@@ -15,7 +15,7 @@ public class Progress {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(name = "user_id", nullable = false, unique = false)
     private String userId;
 
     @Column(name = "course_id", nullable = false)

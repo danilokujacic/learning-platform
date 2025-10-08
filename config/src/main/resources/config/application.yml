@@ -1,6 +1,31 @@
 # Shared configuration for ALL microservices
 
 spring:
+
+  rabbitmq:
+    host: ${RABBIT_MQ_HOST}
+    port: ${RABBIT_MQ_PORT}
+    username: ${RABBIT_MQ_USERNAME}
+    password: ${RABBIT_MQ_PASSWORD}
+    virtual-host: /
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+    listener:
+      simple:
+        acknowledge-mode: auto
+        prefetch: 10
+        concurrency: 3
+        max-concurrency: 10
+        retry:
+          enabled: true
+          initial-interval: 1000
+          max-attempts: 3
+          max-interval: 10000
+          mulitplier: 2
+
+
   datasource:
     driver-class-name: org.postgresql.Driver
 
@@ -43,5 +68,10 @@ management:
 
 # Logging (Shared)
 logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId},%X{spanId}] [%X{correlationId}] %logger{36} - %msg%n"
   level:
     org.springframework.security: INFO
+    org.springframework.amqp: DEBUG
+    springframework.amqp.rabbit: DEBUG
+    com.rabbitmq.client: DEBUG

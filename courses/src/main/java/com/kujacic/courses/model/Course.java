@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
@@ -25,4 +27,7 @@ public class Course {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private CourseLevels level = CourseLevels.JUNIOR;
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseLevel> courseLevels;
 }
