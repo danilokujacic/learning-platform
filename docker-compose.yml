@@ -1,6 +1,16 @@
 version: '3.8'
 
 services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"     # RabbitMQ (AMQP) port
+      - "15672:15672"   # RabbitMQ Management UI port
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBIT_MQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBIT_MQ_PASSWORD}
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.0
     container_name: keycloak
