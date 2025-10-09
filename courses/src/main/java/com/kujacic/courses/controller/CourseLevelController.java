@@ -1,6 +1,9 @@
 package com.kujacic.courses.controller;
 
+import com.kujacic.courses.dto.courseLevel.CourseLevelUpdatedResponse;
 import com.kujacic.courses.dto.courseLevel.CreateCourseLevelDTO;
+import com.kujacic.courses.dto.courseLevel.UpdateCourseLevelStatus;
+import com.kujacic.courses.enums.CourseLevelPassedStatus;
 import com.kujacic.courses.service.CourseLevelsService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +25,14 @@ public class CourseLevelController {
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
-    @PostMapping("{id}/course-levels/pass/{levelId}")
-    public ResponseEntity<Void> passCourseLevel(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id, @PathVariable Long levelId) {
+    @PatchMapping("{id}/course-levels")
+    public ResponseEntity<CourseLevelUpdatedResponse> passCourseLevel(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id, @PathVariable Long levelId, @Valid @RequestBody UpdateCourseLevelStatus updateCourseLevelStatus) {
         String userId = jwt.getClaimAsString("sub");
-        courseLevelsService.passCourseLevel(id, levelId, userId);
-        return new ResponseEntity<>(null, HttpStatus.CREATED);
+        // TODO: apply toggle between status passed and not passed ( for now just for passed do logic)
+        if(updateCourseLevelStatus.getStatus().equals(CourseLevelPassedStatus.PASSED)) {
+            courseLevelsService.passCourseLevel(id, levelId, userId);
+        }
+        CourseLevelUpdatedResponse courseLevelUpdatedResponse = CourseLevelUpdatedResponse.builder().courseLevelPassedStatus(CourseLevelPassedStatus.PASSED).build();
+        return new ResponseEntity<>(courseLevelUpdatedResponse, HttpStatus.OK);
     }
 }

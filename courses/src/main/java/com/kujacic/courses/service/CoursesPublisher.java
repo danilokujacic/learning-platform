@@ -2,7 +2,7 @@ package com.kujacic.courses.service;
 
 import com.kujacic.courses.model.CourseLevelPassEvent;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class CoursesPublisher {
     private final RabbitTemplate rabbitTemplate;
 

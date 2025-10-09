@@ -3,7 +3,6 @@ package com.kujacic.courses.dto.course;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kujacic.courses.dto.courseLevel.CourseLevelResponse;
 import com.kujacic.courses.enums.CourseLevels;
-import com.kujacic.courses.model.CourseLevel;
 import lombok.*;
 
 import java.util.List;

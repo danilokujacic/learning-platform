@@ -3,10 +3,11 @@ package com.kujacic.courses.service;
 import com.kujacic.courses.dto.course.CourseRequestDTO;
 import com.kujacic.courses.dto.course.CourseResponseDTO;
 import com.kujacic.courses.dto.courseLevel.CourseLevelResponse;
+import com.kujacic.courses.exception.CourseNotFoundException;
 import com.kujacic.courses.model.Course;
 import com.kujacic.courses.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Log4j2
+@Slf4j
 public class CourseService {
 
     private final CourseRepository courseRepository;
@@ -30,7 +31,7 @@ public class CourseService {
 
     public CourseResponseDTO getCourse(Integer id) {
         log.info("COURSE ID: {}", id);
-        Course course = courseRepository.findCourseByIdWithLevels(id).orElseThrow(() -> new RuntimeException("Course is not found"));
+        Course course = courseRepository.findCourseByIdWithLevels(id).orElseThrow(() -> new CourseNotFoundException("Course is not found"));
 
         List<CourseLevelResponse> levels =  course.getCourseLevels().stream()
                 .map(level -> CourseLevelResponse.builder()

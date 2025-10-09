@@ -4,7 +4,7 @@ import com.kujacic.users.model.CourseLevelPassEvent;
 import com.kujacic.users.model.Progress;
 import com.kujacic.users.repository.ProgressRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.support.AmqpHeaders;
@@ -12,7 +12,7 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.stereotype.Component;
 
 @Component
-@Log4j2
+@Slf4j
 @RequiredArgsConstructor
 public class CourseListener {
 
