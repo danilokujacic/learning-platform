@@ -25,7 +25,7 @@ public class CourseLevelController {
         return new ResponseEntity<>(null, HttpStatus.CREATED);
     }
 
-    @PatchMapping("{id}/course-levels")
+    @PatchMapping("{id}/course-levels/{levelId}")
     public ResponseEntity<CourseLevelUpdatedResponse> passCourseLevel(@AuthenticationPrincipal Jwt jwt, @PathVariable Integer id, @PathVariable Long levelId, @Valid @RequestBody UpdateCourseLevelStatus updateCourseLevelStatus) {
         String userId = jwt.getClaimAsString("sub");
         // TODO: apply toggle between status passed and not passed ( for now just for passed do logic)

@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 @Log4j2
@@ -20,7 +18,7 @@ public class CourseLevelsService {
 
     private final CourseLevelsRepository courseLevelsRepository;
     private final CourseRepository courseRepository;
-    private final CoursesPublisher coursesPublisher;
+    private final CoursePublisher coursesPublisher;
 
 
     public void createCourseLevel(Integer courseId, CreateCourseLevelDTO createCourseLevelDTO) {
@@ -31,11 +29,11 @@ public class CourseLevelsService {
 
     public void passCourseLevel( Integer courseId, Long levelId, String userId) {
 
-       CourseLevel courseLevel =  courseLevelsRepository.findById(levelId).orElseThrow(() -> new CourseLevelNotFoundException("Could no find this course level"));
+       CourseLevel courseLevel =  courseLevelsRepository.findCourseLevelWithCourse(levelId).orElseThrow(() -> new CourseLevelNotFoundException("Could no find this course level"));
 
 
        log.info("User {} passed level {}", userId, levelId);
-       this.coursesPublisher.courseLevelPublisher(courseId, levelId, userId, courseLevel.getProgress());
+       this.coursesPublisher.courseLevelPublisher(courseId, levelId, userId, courseLevel.getProgress(), courseLevel.getCourse().getName());
 
 
 

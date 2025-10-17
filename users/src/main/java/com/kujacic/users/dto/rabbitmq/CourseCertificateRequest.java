@@ -1,4 +1,4 @@
-package com.kujacic.users.model;
+package com.kujacic.users.dto.rabbitmq;
 
 import lombok.*;
 
@@ -6,10 +6,9 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CourseLevelPassEvent {
+@Builder
+public class CourseCertificateRequest {
 
     private String userId;
     private Integer courseId;
-    private Long levelId;
-    private Integer progress;
 }

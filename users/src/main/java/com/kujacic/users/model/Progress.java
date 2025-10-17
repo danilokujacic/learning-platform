@@ -23,4 +23,7 @@ public class Progress {
 
     @Column(name = "progress")
     private Integer progress;
+
+    @Column(name = "course_name")
+    private String courseName;
 }
