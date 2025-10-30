@@ -2,10 +2,7 @@ package com.kujacic.courses.model;
 
 import com.kujacic.courses.enums.CourseLevels;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.List;
@@ -16,6 +13,7 @@ import java.util.List;
 @Setter
 @Entity
 @Table(name = "courses")
+@Builder
 @EntityListeners(AuditingEntityListener.class)
 public class Course {
 

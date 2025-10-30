@@ -24,7 +24,6 @@ import java.util.Optional;
 public class CourseService {
 
     private final CourseRepository courseRepository;
-    private final CoursePublisher coursesPublisher;
 
     private CourseResponseDTO toCourseResponse(Course course, List<CourseLevelResponse> levels) {
         return CourseResponseDTO.builder()
@@ -62,9 +61,9 @@ public class CourseService {
         Course course = new Course();
         BeanUtils.copyProperties(courseRequest, course);
 
-        this.courseRepository.save(course);
+        Course savedCourse = this.courseRepository.save(course);
 
-        return  toCourseResponse(course);
+        return  toCourseResponse(savedCourse);
     }
 
     public Page<CourseResponseDTO> findCourses(int page, int size, List<Integer> courseIds) {
