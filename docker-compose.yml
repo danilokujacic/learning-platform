@@ -14,15 +14,21 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.0
     container_name: keycloak
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./realms:/opt/keycloak/data/import
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
     ports:
       - "8080:8080"
     command: start-dev
+    restart: unless-stopped
     networks:
       - keycloak-network
 
+volumes:
+  keycloak_data:
 networks:
   keycloak-network:
     driver: bridge

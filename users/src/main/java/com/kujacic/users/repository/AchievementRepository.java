@@ -11,6 +11,6 @@ import java.util.Optional;
 
 public interface AchievementRepository extends JpaRepository<Achievement, Long> {
 
-    @Query("SELECT * FROM Achievement a WHERE a.userId = :userId")
+    @Query("SELECT a FROM Achievement a WHERE a.userId = :userId")
     Optional<List<Achievement>> findAllAchievementsByUserId(@Param("userId") String userId);
 }

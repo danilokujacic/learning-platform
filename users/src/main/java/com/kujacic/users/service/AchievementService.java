@@ -14,9 +14,9 @@ public class AchievementService {
     private final AchievementRepository achievementRepository;
 
 
-    public void createAchievement(Long certificateId, String userId) {
+    public Achievement createAchievement(Long certificateId, String userId) {
         Achievement achievement = Achievement.builder().userId(userId).certificateId(certificateId).build();
-        achievementRepository.save(achievement);
+        return achievementRepository.save(achievement);
     }
 
     public List<Achievement> getUserAchievements(String userId) {

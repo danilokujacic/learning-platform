@@ -9,9 +9,14 @@ import com.kujacic.courses.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
+
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,6 +25,22 @@ public class CourseService {
 
     private final CourseRepository courseRepository;
     private final CoursePublisher coursesPublisher;
+
+    private CourseResponseDTO toCourseResponse(Course course, List<CourseLevelResponse> levels) {
+        return CourseResponseDTO.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .level(course.getLevel())
+                .courseLevels(levels)
+                .build();
+    }
+    private CourseResponseDTO toCourseResponse(Course course) {
+        return CourseResponseDTO.builder()
+                .id(course.getId())
+                .name(course.getName())
+                .level(course.getLevel())
+                .build();
+    }
 
 
     public CourseResponseDTO getCourse(Integer id) {
@@ -33,12 +54,7 @@ public class CourseService {
                         .build())
                 .toList();
 
-        return CourseResponseDTO.builder()
-                .id(course.getId())
-                .name(course.getName())
-                .level(course.getLevel())
-                .courseLevels(levels)
-                .build();
+        return toCourseResponse(course, levels);
 
     }
 
@@ -48,10 +64,19 @@ public class CourseService {
 
         this.courseRepository.save(course);
 
-        CourseResponseDTO courseResponse = new CourseResponseDTO();
+        return  toCourseResponse(course);
+    }
 
-        BeanUtils.copyProperties(course, courseResponse);
+    public Page<CourseResponseDTO> findCourses(int page, int size, List<Integer> courseIds) {
+        Pageable pageable = PageRequest.of(page, size);
 
-        return courseResponse;
+        Page<Course> courses;
+        if (courseIds == null || courseIds.isEmpty()) {
+            courses = courseRepository.findAll(pageable);
+        } else {
+            courses = courseRepository.findAllByCourseIds(courseIds, pageable);
+        }
+
+        return courses.map(this::toCourseResponse);
     }
 }

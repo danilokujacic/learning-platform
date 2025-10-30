@@ -2,6 +2,7 @@ package com.kujacic.users.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -10,6 +11,7 @@ import lombok.*;
 @Entity
 @Builder
 @Table(name = "progress")
+@EntityListeners(AuditingEntityListener.class)
 public class Progress {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
