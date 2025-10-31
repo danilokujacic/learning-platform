@@ -5,6 +5,13 @@ import com.kujacic.courses.dto.video.VideoMetadata;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.web.ServerProperties;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -22,7 +29,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CourseContentService {
+public class VideoService {
 
     private final S3Client s3Client;
 
@@ -37,14 +44,14 @@ public class CourseContentService {
     @Value("${video.upload.max-file-size-mb}")
     private long maxFileSizeMb;
 
-    public String uploadVideo(MultipartFile file) throws IOException {
+    public String uploadVideo(String contentId,  MultipartFile file) throws IOException {
         // Validate file
         validateVideo(file);
 
         // Generate unique file name
         String originalFilename = file.getOriginalFilename();
         String fileExtension = getFileExtension(originalFilename);
-        String uniqueFileName = UUID.randomUUID().toString() + "." + fileExtension;
+        String uniqueFileName = contentId + "." + fileExtension;
         String s3Key = "videos/" + uniqueFileName;
 
         try {
@@ -76,14 +83,12 @@ public class CourseContentService {
             throw new IllegalArgumentException("File cannot be empty");
         }
 
-        // Validate file size
         long fileSizeInMb = file.getSize() / (1024 * 1024);
         if (fileSizeInMb > maxFileSizeMb) {
             throw new IllegalArgumentException(
                     String.format("File size exceeds maximum allowed size of %d MB", maxFileSizeMb));
         }
 
-        // Validate file extension
         String filename = file.getOriginalFilename();
         if (filename == null || filename.isEmpty()) {
             throw new IllegalArgumentException("Filename cannot be empty");
@@ -97,7 +102,6 @@ public class CourseContentService {
                     String.format("Invalid file type. Allowed types: %s", allowedExtensions));
         }
 
-        // Validate content type
         String contentType = file.getContentType();
         if (contentType == null || !contentType.startsWith("video/")) {
             throw new IllegalArgumentException("File must be a video");
@@ -135,9 +139,52 @@ public class CourseContentService {
         }
     }
 
-    /**
-     * Stream full video
-     */
+    public ResponseEntity<byte[]> streamVideo(String videoId, String rangeHeader) {
+        try {
+            String videoKey = "videos/" + videoId + ".mp4";
+            log.info("Video id {}", videoId);
+            if (!videoExists(videoKey)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            VideoMetadata metadata = getVideoMetadata(videoKey);
+            long fileSize = metadata.getContentLength();
+
+            if (rangeHeader == null) {
+                return streamFullVideo(videoKey, metadata);
+            }
+
+            return streamVideoWithRange(videoKey, rangeHeader, fileSize, metadata);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+
+    }
+
+    public ResponseEntity<Resource> download(String videoId) {
+        try {
+            String videoKey = "videos/" + videoId + ".mp4";
+
+            if (!videoExists(videoKey)) {
+                return ResponseEntity.notFound().build();
+            }
+
+            VideoMetadata metadata = getVideoMetadata(videoKey);
+            InputStreamResource resource = new InputStreamResource(getFullVideo(videoKey));
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(metadata.getContentType()))
+                    .contentLength(metadata.getContentLength())
+                    .header(HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + metadata.getFileName() + "\"")
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
     public InputStream getFullVideo(String videoKey) {
         try {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
@@ -154,9 +201,75 @@ public class CourseContentService {
         }
     }
 
-    /**
-     * Stream video with range support (for seeking)
-     */
+    public ResponseEntity<byte[]> streamFullVideo(String videoKey, VideoMetadata metadata) {
+        long chunkSize = Math.min(1024 * 1024 * 10, metadata.getContentLength());
+        VideoChunk chunk = getVideoChunk(videoKey, 0, chunkSize - 1);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType(metadata.getContentType()));
+        headers.setContentLength(chunk.getData().length);
+        headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
+        headers.set(HttpHeaders.CONTENT_RANGE,
+                String.format("bytes %d-%d/%d", 0, chunkSize - 1, metadata.getContentLength()));
+
+        return ResponseEntity
+                .status(HttpStatus.PARTIAL_CONTENT)
+                .headers(headers)
+                .body(chunk.getData());
+    }
+
+    public ResponseEntity<byte[]> streamVideoWithRange(
+            String videoKey, String rangeHeader, long fileSize, VideoMetadata metadata) {
+
+        try {
+            String[] ranges = rangeHeader.replace("bytes=", "").split("-");
+            long rangeStart = Long.parseLong(ranges[0]);
+            long rangeEnd;
+
+            if (ranges.length > 1 && !ranges[1].isEmpty()) {
+                rangeEnd = Long.parseLong(ranges[1]);
+            } else {
+                rangeEnd = Math.min(rangeStart + (1024 * 1024 * 10) - 1, fileSize - 1);
+            }
+
+            if (rangeStart >= fileSize) {
+                return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                        .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
+                        .build();
+            }
+
+            VideoChunk chunk = getVideoChunk(videoKey, rangeStart, rangeEnd);
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.parseMediaType(metadata.getContentType()));
+            headers.setContentLength(chunk.getData().length);
+            headers.set(HttpHeaders.ACCEPT_RANGES, "bytes");
+            headers.set(HttpHeaders.CONTENT_RANGE,
+                    String.format("bytes %d-%d/%d",
+                            chunk.getRangeStart(),
+                            chunk.getRangeEnd(),
+                            chunk.getContentLength()));
+            headers.setCacheControl("no-cache, no-store, must-revalidate");
+
+            log.info("Sending video chunk: bytes {}-{}/{}",
+                    chunk.getRangeStart(), chunk.getRangeEnd(), chunk.getContentLength());
+
+            return ResponseEntity
+                    .status(HttpStatus.PARTIAL_CONTENT)
+                    .headers(headers)
+                    .body(chunk.getData());
+
+        } catch (NumberFormatException e) {
+            log.error("Invalid range header: {}", rangeHeader);
+            return ResponseEntity.badRequest().build();
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid byte range: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                    .header(HttpHeaders.CONTENT_RANGE, "bytes */" + fileSize)
+                    .build();
+        }
+    }
+
     public VideoChunk getVideoChunk(String videoKey, long start, long end) {
         try {
             VideoMetadata metadata = getVideoMetadata(videoKey);
@@ -197,9 +310,6 @@ public class CourseContentService {
         }
     }
 
-    /**
-     * Check if video exists
-     */
     public boolean videoExists(String videoKey) {
         try {
             HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
