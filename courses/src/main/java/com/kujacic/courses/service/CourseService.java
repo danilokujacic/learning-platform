@@ -9,7 +9,6 @@ import com.kujacic.courses.repository.CourseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,14 +19,8 @@ import java.util.List;
 public class CourseService {
 
     private final CourseRepository courseRepository;
-    private final CoursesPublisher coursesPublisher;
+    private final CoursePublisher coursesPublisher;
 
-
-    @Value("${RABBIT_MQ_USERNAME:NOT_SET}")
-    private String rabbitMqUser;
-
-    @Value("${RABBIT_MQ_PASSWORD:NOT_SET}")
-    private String rabbitMqPassword;
 
     public CourseResponseDTO getCourse(Integer id) {
         log.info("COURSE ID: {}", id);

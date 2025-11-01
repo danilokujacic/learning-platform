@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ProgressRepository extends JpaRepository<Progress, Integer> {
@@ -17,6 +18,9 @@ public interface ProgressRepository extends JpaRepository<Progress, Integer> {
             @Param("courseId") Integer courseId,
             @Param("userId") String userId
     );
+
+    @Query(value = "SELECT * FROM progress WHERE user_id = :userId", nativeQuery = true)
+    List<Progress> findByUserId(@Param("userId") String userId);
 
     @Transactional
     @Modifying

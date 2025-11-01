@@ -1,4 +1,4 @@
-package com.kujacic.courses.model;
+package com.kujacic.courses.dto.rabbitmq;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,4 +15,5 @@ public class CourseLevelPassEvent {
     private Integer courseId;
     private Long levelId;
     private Integer progress;
+    private String courseName;
 }

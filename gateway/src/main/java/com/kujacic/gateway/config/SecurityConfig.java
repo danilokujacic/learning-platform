@@ -44,23 +44,19 @@ public class SecurityConfig {
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
                 .authorizeExchange(exchanges -> exchanges
-                        // Allow actuator endpoints without authentication
                         .pathMatchers("/actuator/**").permitAll()
-                        // Allow OAuth2 login endpoints
                         .pathMatchers("/login/**", "/oauth2/**").permitAll()
-                        // All other requests require authentication
                         .anyExchange().authenticated()
                 )
-                // Enable OAuth2 login for browser-based access
                 .oauth2Login(Customizer.withDefaults())
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt())
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
                 .exceptionHandling(exceptionHandling -> exceptionHandling
                         .authenticationEntryPoint(
                                 new RedirectServerAuthenticationEntryPoint("/oauth2/authorization/keycloak")
                         )
                 )
-                // Disable CSRF for API Gateway
-                .csrf(csrf -> csrf.disable());
+
+                .csrf(ServerHttpSecurity.CsrfSpec::disable);
 
         return http.build();
     }
