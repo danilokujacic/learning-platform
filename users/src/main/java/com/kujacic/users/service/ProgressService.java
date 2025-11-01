@@ -8,8 +8,6 @@ import com.kujacic.users.repository.ProgressRepository;
 import com.kujacic.users.util.DocumentUtils;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.BeanUtils;
 
@@ -41,10 +39,10 @@ public class ProgressService {
                 .findByCourseIdAndUserId(courseLevel.getCourseId(), courseLevel.getUserId());
 
         if(progress.isPresent()) {
-            Progress found_progress = progress.get();
-            progressRepository.updateProgressByCourseIdAndUserId(found_progress.getProgress() + courseLevel.getProgress(), courseLevel.getCourseId(), courseLevel.getUserId());
+            Progress foundProgress = progress.get();
+            progressRepository.updateProgressByCourseIdAndUserId(foundProgress.getProgress() + courseLevel.getProgress(), courseLevel.getCourseId(), courseLevel.getUserId());
 
-           return found_progress;
+           return foundProgress;
         }
 
         Progress new_progress = Progress.builder().userId(courseLevel.getUserId()).courseName(courseLevel.getCourseName()).courseId(courseLevel.getCourseId()).progress(courseLevel.getProgress()).build();
