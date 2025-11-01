@@ -42,7 +42,7 @@ public class ProgressService {
             Progress foundProgress = progress.get();
             progressRepository.updateProgressByCourseIdAndUserId(foundProgress.getProgress() + courseLevel.getProgress(), courseLevel.getCourseId(), courseLevel.getUserId());
 
-            return ProgressResponseDTO.builder().id(foundProgress.getId()).progress(found_progress.getProgress() + courseLevel.getProgress()).courseId(found_progress.getCourseId()).userId(found_progress.getUserId()).build();
+            return ProgressResponseDTO.builder().id(foundProgress.getId()).progress(foundProgress.getProgress() + courseLevel.getProgress()).courseId(foundProgress.getCourseId()).userId(foundProgress.getUserId()).build();
         }
 
         Progress new_progress = Progress.builder().userId(courseLevel.getUserId()).courseName(courseLevel.getCourseName()).courseId(courseLevel.getCourseId()).progress(courseLevel.getProgress()).build();
