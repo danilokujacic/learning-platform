@@ -23,9 +23,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    /**
-     * Handle validation errors from @Valid annotation on @RequestBody
-     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponseDTO> handleValidationErrors(
             MethodArgumentNotValidException ex) {
@@ -48,9 +45,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Handle validation errors from @Validated annotation on method parameters
-     */
     @ExceptionHandler(ConstraintViolationException.class)
     public ResponseEntity<ValidationErrorResponseDTO> handleConstraintViolation(
             ConstraintViolationException ex) {
@@ -72,9 +66,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    /**
-     * Handle ProgressNotFoundException
-     */
     @ExceptionHandler(ProgressNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleProgressNotFound(
             ProgressNotFoundException ex) {
@@ -86,9 +77,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Handle ResourceNotFoundException (e.g., Course not found)
-     */
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponseDTO> handleResourceNotFound(
             ResourceNotFoundException ex) {
@@ -100,9 +88,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Handle ServiceUnavailableException
-     */
     @ExceptionHandler(ServiceUnavailableException.class)
     public ResponseEntity<ErrorResponseDTO> handleServiceUnavailable(
             ServiceUnavailableException ex) {
@@ -114,9 +99,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
     }
 
-    /**
-     * Handle Feign 404 Not Found
-     */
     @ExceptionHandler(FeignException.NotFound.class)
     public ResponseEntity<ErrorResponseDTO> handleFeignNotFound(
             FeignException.NotFound ex) {
@@ -128,39 +110,9 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    /**
-     * Handle all other Feign exceptions
-     */
-    @ExceptionHandler(FeignException.class)
-    public ResponseEntity<ErrorResponseDTO> handleFeignException(FeignException ex) {
-        HttpStatus status = HttpStatus.valueOf(ex.status());
-
-        String message = switch (ex.status()) {
-            case 400 -> "Bad request to external service";
-            case 401 -> "Unauthorized access to external service";
-            case 403 -> "Forbidden access to external service";
-            case 404 -> "Resource not found in external service";
-            case 500 -> "External service encountered an error";
-            case 503 -> "External service is temporarily unavailable";
-            default -> "Error communicating with external service";
-        };
-
-        ErrorResponseDTO error = new ErrorResponseDTO(
-                status.value(),
-                message,
-                LocalDateTime.now()
-        );
-
-        return new ResponseEntity<>(error, status);
-    }
-
-    /**
-     * Handle all other exceptions
-     */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponseDTO> handleGeneralException(Exception ex) {
-        // Log the exception for debugging
-        ex.printStackTrace(); // Replace with proper logging in production
+        ex.printStackTrace();
 
         ErrorResponseDTO error = new ErrorResponseDTO(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

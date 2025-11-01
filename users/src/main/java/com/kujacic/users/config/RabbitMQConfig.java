@@ -20,6 +20,15 @@ public class RabbitMQConfig {
     }
 
     @Bean
+    public Queue courseCertificatesQueue() {
+        return QueueBuilder.durable("course-certificates-queue")
+                .withArgument("x-message-ttl", 60000)
+                .withArgument("x-dead-letter-exchange", "dlx")
+                .build();
+    }
+
+
+    @Bean
     public TopicExchange courseExchange() {
         return new TopicExchange("course-exchange", true, false);
     }
@@ -30,6 +39,10 @@ public class RabbitMQConfig {
                 .bind(coursesQueue())
                 .to(courseExchange())
                 .with("course-level.passed");
+    }
+
+    @Bean Binding courseCertificateIssued() {
+        return BindingBuilder.bind((courseCertificatesQueue())).to(courseExchange()).with("course-certificate.issued");
     }
 
     @Bean
