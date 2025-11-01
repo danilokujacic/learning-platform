@@ -1,6 +1,7 @@
 package com.kujacic.courses.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import lombok.Setter;
 @Table(name = "certificates")
 @Getter
 @Setter
+@Builder
 public class CourseCertificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

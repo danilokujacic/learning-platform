@@ -28,10 +28,20 @@ public class CourseListener {
 
         if(certificate.isPresent()) {
             log.info("Issuing certificate for user: {}", certificateRequest.getUserId());
+
             CourseCertificate resolvedCert = certificate.get();
             Course course = resolvedCert.getCourse();
-            CourseResponseDTO courseResponse = CourseResponseDTO.builder().id(course.getId()).name(course.getName()).build();
-            CourseCertificateIssuedEvent courseCertificateResponse = CourseCertificateIssuedEvent.builder().id(resolvedCert.getId()).course(courseResponse).userId(certificateRequest.getUserId()).build();
+
+            CourseResponseDTO courseResponse = CourseResponseDTO.builder()
+                    .id(course.getId())
+                    .name(course.getName())
+                    .build();
+
+            CourseCertificateIssuedEvent courseCertificateResponse = CourseCertificateIssuedEvent.builder()
+                    .id(resolvedCert.getId())
+                    .course(courseResponse)
+                    .userId(certificateRequest.getUserId())
+                    .build();
             coursesPublisher.courseCertificatePublisher(courseCertificateResponse);
         }else {
             log.info("No certificate for this course :(");
