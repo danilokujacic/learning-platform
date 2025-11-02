@@ -1,18 +1,20 @@
 package com.kujacic.users.dto.course;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.kujacic.users.dto.courseLevel.CourseLevelResponse;
+import com.kujacic.users.enums.CourseLevels;
+import lombok.*;
+
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
 public class CourseResponseDTO {
-
-    @JsonProperty("course_id")
-    private Integer courseId;
-
+    private Integer id;
+    private String name;
+    private CourseLevels level;
+    private Integer progress;
 }

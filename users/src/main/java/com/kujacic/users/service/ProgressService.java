@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -31,6 +32,17 @@ public class ProgressService {
             throw new CouldNotParseExcelException();
         }
 
+
+    }
+
+    public List<ProgressResponseDTO> getAllProgressesByUserId(String userId) {
+        List<Progress> progressesByUser = progressRepository.findByUserId(userId);
+
+        return progressesByUser.stream().map(progress -> ProgressResponseDTO.builder()
+                .userId(progress.getUserId())
+                .progress(progress.getProgress())
+                .courseId(progress.getCourseId())
+                .build()).collect(Collectors.toList());
 
     }
 

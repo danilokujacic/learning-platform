@@ -6,6 +6,7 @@ import com.kujacic.courses.dto.course.QueryCourseDTO;
 import com.kujacic.courses.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
+@Slf4j
 public class CourseController {
     private final CourseService courseService;
 
@@ -34,6 +36,8 @@ public class CourseController {
 
     @PostMapping("query")
     public Page<CourseResponseDTO> queryCourses(@RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int size, @RequestBody QueryCourseDTO queryCourseDTO ) {
+
+        log.info("Course ids {}", queryCourseDTO.getCourseIds());
         return courseService.findCourses(page, size, queryCourseDTO.getCourseIds());
     }
 
