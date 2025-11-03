@@ -44,13 +44,28 @@ public class ProgressService {
             Progress found_progress = progress.get();
             progressRepository.updateProgressByCourseIdAndUserId(found_progress.getProgress() + courseLevel.getProgress(), courseLevel.getCourseId(), courseLevel.getUserId());
 
-            return ProgressResponseDTO.builder().id(found_progress.getId()).progress(found_progress.getProgress() + courseLevel.getProgress()).courseId(found_progress.getCourseId()).userId(found_progress.getUserId()).build();
+            return ProgressResponseDTO.builder()
+                    .id(found_progress.getId())
+                    .progress(found_progress.getProgress() + courseLevel.getProgress())
+                    .courseId(found_progress.getCourseId())
+                    .userId(found_progress.getUserId())
+                    .build();
         }
 
-        Progress new_progress = Progress.builder().userId(courseLevel.getUserId()).courseName(courseLevel.getCourseName()).courseId(courseLevel.getCourseId()).progress(courseLevel.getProgress()).build();
-        progressRepository.save(new_progress);
+        Progress newProgress = Progress.builder()
+                .userId(courseLevel.getUserId())
+                .courseName(courseLevel.getCourseName())
+                .courseId(courseLevel.getCourseId())
+                .progress(courseLevel.getProgress())
+                .build();
+        progressRepository.save(newProgress);
 
-        return ProgressResponseDTO.builder().id(new_progress.getId()).progress(new_progress.getProgress()).courseId(new_progress.getCourseId()).userId(new_progress.getUserId()).build();
+        return ProgressResponseDTO.builder()
+                .id(newProgress.getId())
+                .progress(newProgress.getProgress())
+                .courseId(newProgress.getCourseId())
+                .userId(newProgress.getUserId())
+                .build();
     }
 
 }

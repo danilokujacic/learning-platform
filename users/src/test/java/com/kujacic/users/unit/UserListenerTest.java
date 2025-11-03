@@ -3,6 +3,8 @@ import com.kujacic.users.dto.course.CourseResponseDTO;
 import com.kujacic.users.dto.progress.ProgressResponseDTO;
 import com.kujacic.users.dto.rabbitmq.CourseCertificateIssuedEvent;
 import com.kujacic.users.dto.rabbitmq.CourseLevelPassEvent;
+import com.kujacic.users.factory.CourseFactory;
+import com.kujacic.users.factory.ProgressFactory;
 import com.kujacic.users.repository.ProgressRepository;
 import com.kujacic.users.service.AchievementService;
 import com.kujacic.users.service.ProgressService;
@@ -15,6 +17,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,6 +28,10 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserListenerTest {
+
+    private final CourseFactory courseFactory = new CourseFactory();
+
+    private final ProgressFactory progressFactory = new ProgressFactory();
 
     @Mock
     private ProgressRepository progressRepository;
@@ -51,8 +58,8 @@ class UserListenerTest {
         AtomicReference<String> capturedCorrelationId = new AtomicReference<>();
         AtomicReference<String> capturedLevelId = new AtomicReference<>();
 
-        CourseLevelPassEvent event = createEvent(50);
-        ProgressResponseDTO response = createProgressResponse(1, 50);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent();
+        ProgressResponseDTO response = progressFactory.createProgressResponse(1, 50);
 
         when(progressService.createProgress(any())).thenAnswer(invocation -> {
             capturedCorrelationId.set(MDC.get("correlationId"));
@@ -68,8 +75,8 @@ class UserListenerTest {
 
     @Test
     void shouldClearMDCAfterProcessing() {
-        CourseLevelPassEvent event = createEvent(50);
-        ProgressResponseDTO response = createProgressResponse(1, 50);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent();
+        ProgressResponseDTO response = progressFactory.createProgressResponse(1, 50);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -81,7 +88,7 @@ class UserListenerTest {
 
     @Test
     void shouldClearMDCOnException() {
-        CourseLevelPassEvent event = createEvent(50);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent();
 
         when(progressService.createProgress(any())).thenThrow(new RuntimeException("Test error"));
 
@@ -95,8 +102,8 @@ class UserListenerTest {
 
     @Test
     void shouldCreateProgress() {
-        CourseLevelPassEvent event = createEvent(50);
-        ProgressResponseDTO response = createProgressResponse(1, 50);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent();
+        ProgressResponseDTO response = progressFactory.createProgressResponse(1, 50);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -107,8 +114,8 @@ class UserListenerTest {
 
     @Test
     void shouldRequestCertificateWhenProgressIs100() {
-        CourseLevelPassEvent event = createEvent(100);
-        ProgressResponseDTO response = createProgressResponse(1, 100);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent("user123", 100);
+        ProgressResponseDTO response = progressFactory.createProgressResponse(150, 1);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -119,8 +126,8 @@ class UserListenerTest {
 
     @Test
     void shouldRequestCertificateWhenProgressIsGreaterThan100() {
-        CourseLevelPassEvent event = createEvent(150);
-        ProgressResponseDTO response = createProgressResponse(1, 150);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent("user123", 150);
+        ProgressResponseDTO response = progressFactory.createProgressResponse(150, 1);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -131,8 +138,8 @@ class UserListenerTest {
 
     @Test
     void shouldNotRequestCertificateWhenProgressIsLessThan100() {
-        CourseLevelPassEvent event = createEvent(99);
-        ProgressResponseDTO response = createProgressResponse(1, 99);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent("user123", 99);
+        ProgressResponseDTO response = progressFactory.createProgressResponse(1, 99);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -143,8 +150,8 @@ class UserListenerTest {
 
     @Test
     void shouldNotRequestCertificateWhenProgressIs0() {
-        CourseLevelPassEvent event = createEvent(0);
-        ProgressResponseDTO response = createProgressResponse(1, 0);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent("user123", 0);
+        ProgressResponseDTO response = progressFactory.createProgressResponse(1, 0);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -155,10 +162,9 @@ class UserListenerTest {
 
     @Test
     void shouldPassCorrectCourseIdAndUserIdToCertificateRequest() {
-        CourseLevelPassEvent event = createEvent(100);
+        CourseLevelPassEvent event = courseFactory.createCourseLevelPassEvent("user999", 150);
         event.setCourseId(999);
-        event.setUserId("user999");
-        ProgressResponseDTO response = createProgressResponse(999, 100);
+        ProgressResponseDTO response = progressFactory.createProgressResponse(999, 100);
 
         when(progressService.createProgress(any())).thenReturn(response);
 
@@ -172,7 +178,7 @@ class UserListenerTest {
         AtomicReference<String> capturedCorrelationId = new AtomicReference<>();
         AtomicReference<String> capturedLevelId = new AtomicReference<>();
 
-        CourseCertificateIssuedEvent event = createCertificateEvent();
+        CourseCertificateIssuedEvent event = courseFactory.createCourseCertificateIssuedEvent();
 
         doAnswer(invocation -> {
             capturedCorrelationId.set(MDC.get("correlationId"));
@@ -188,7 +194,7 @@ class UserListenerTest {
 
     @Test
     void shouldClearMDCAfterCertificateProcessing() {
-        CourseCertificateIssuedEvent event = createCertificateEvent();
+        CourseCertificateIssuedEvent event = courseFactory.createCourseCertificateIssuedEvent();
 
         userListener.handleCertificateReceivedEvent(event, "cert-correlation-id", "456");
 
@@ -198,7 +204,7 @@ class UserListenerTest {
 
     @Test
     void shouldClearMDCOnCertificateException() {
-        CourseCertificateIssuedEvent event = createCertificateEvent();
+        CourseCertificateIssuedEvent event = courseFactory.createCourseCertificateIssuedEvent();
 
         doThrow(new RuntimeException("Achievement error"))
                 .when(achievementService).createAchievement(any(), any());
@@ -213,7 +219,7 @@ class UserListenerTest {
 
     @Test
     void shouldCreateAchievement() {
-        CourseCertificateIssuedEvent event = createCertificateEvent();
+        CourseCertificateIssuedEvent event = courseFactory.createCourseCertificateIssuedEvent();
         event.setId(100L);
         event.setUserId("user456");
 
@@ -224,7 +230,7 @@ class UserListenerTest {
 
     @Test
     void shouldRethrowException() {
-        CourseCertificateIssuedEvent event = createCertificateEvent();
+        CourseCertificateIssuedEvent event = courseFactory.createCourseCertificateIssuedEvent();
         RuntimeException exception = new RuntimeException("Service unavailable");
 
         doThrow(exception).when(achievementService).createAchievement(any(), any());
@@ -236,37 +242,4 @@ class UserListenerTest {
         assertEquals("Service unavailable", thrown.getMessage());
     }
 
-    private CourseCertificateIssuedEvent createCertificateEvent() {
-        CourseResponseDTO course = new CourseResponseDTO();
-        course.setCourseId(1);
-
-        CourseCertificateIssuedEvent event = new CourseCertificateIssuedEvent();
-        event.setId(1L);
-        event.setUserId("user123");
-        event.setName("Spring Boot Certificate");
-        event.setCourse(course);
-        event.setReferenceUrl("https://certificates.example.com/cert-123");
-        return event;
-    }
-
-
-
-    private CourseLevelPassEvent createEvent(Integer progress) {
-        CourseLevelPassEvent event = new CourseLevelPassEvent();
-        event.setUserId("user123");
-        event.setCourseName("Spring Boot Course");
-        event.setCourseId(1);
-        event.setLevelId(123L);
-        event.setProgress(progress);
-        return event;
-    }
-
-    private ProgressResponseDTO createProgressResponse(Integer courseId, Integer progress) {
-        ProgressResponseDTO response = new ProgressResponseDTO();
-        response.setId(1);
-        response.setProgress(progress);
-        response.setUserId("user123");
-        response.setCourseId(courseId);
-        return response;
-    }
 }
