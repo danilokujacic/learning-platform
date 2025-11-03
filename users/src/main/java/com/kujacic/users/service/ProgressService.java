@@ -34,7 +34,7 @@ public class ProgressService {
 
     }
 
-    public Progress createProgress(CourseLevelPassEvent courseLevel) {
+    public ProgressResponseDTO createProgress(CourseLevelPassEvent courseLevel) {
        Optional<Progress> progress = progressRepository
                 .findByCourseIdAndUserId(courseLevel.getCourseId(), courseLevel.getUserId());
 
@@ -42,16 +42,28 @@ public class ProgressService {
             Progress foundProgress = progress.get();
             progressRepository.updateProgressByCourseIdAndUserId(foundProgress.getProgress() + courseLevel.getProgress(), courseLevel.getCourseId(), courseLevel.getUserId());
 
-           return foundProgress;
+            return ProgressResponseDTO.builder()
+                    .id(foundProgress.getId())
+                    .progress(foundProgress.getProgress() + courseLevel.getProgress())
+                    .courseId(foundProgress.getCourseId())
+                    .userId(foundProgress.getUserId())
+                    .build();
         }
 
-        Progress new_progress = Progress.builder().userId(courseLevel.getUserId()).courseName(courseLevel.getCourseName()).courseId(courseLevel.getCourseId()).progress(courseLevel.getProgress()).build();
-        progressRepository.save(new_progress);
+        Progress newProgress = Progress.builder()
+                .userId(courseLevel.getUserId())
+                .courseName(courseLevel.getCourseName())
+                .courseId(courseLevel.getCourseId())
+                .progress(courseLevel.getProgress())
+                .build();
+        progressRepository.save(newProgress);
 
-        ProgressResponseDTO progressResponse = new ProgressResponseDTO();
-        BeanUtils.copyProperties(new_progress, progressResponse);
-
-        return new_progress;
+        return ProgressResponseDTO.builder()
+                .id(newProgress.getId())
+                .progress(newProgress.getProgress())
+                .courseId(newProgress.getCourseId())
+                .userId(newProgress.getUserId())
+                .build();
     }
 
 }

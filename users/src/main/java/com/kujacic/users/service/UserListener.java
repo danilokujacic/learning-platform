@@ -1,5 +1,6 @@
 package com.kujacic.users.service;
 
+import com.kujacic.users.dto.progress.ProgressResponseDTO;
 import com.kujacic.users.dto.rabbitmq.CourseCertificateIssuedEvent;
 import com.kujacic.users.dto.rabbitmq.CourseLevelPassEvent;
 import com.kujacic.users.model.Progress;
@@ -30,7 +31,7 @@ public class UserListener {
 
         try {
             log.info("Processing user progress");
-            Progress progress = progressService.createProgress(courseLevel);
+            ProgressResponseDTO progress = progressService.createProgress(courseLevel);
             if(progress.getProgress() >= 100) {
                 log.info("Course {} passed, requesting certificate for user {}", courseLevel.getCourseId(), courseLevel.getUserId());
                 userPublisher.requestCertificate(courseLevel.getCourseId(), courseLevel.getUserId());
