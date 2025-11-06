@@ -1,12 +1,12 @@
-package com.kujacic.courses.service;
+package com.kujacic.courses.service.impl;
 
 import com.kujacic.courses.dto.video.VideoChunk;
 import com.kujacic.courses.dto.video.VideoMetadata;
+import com.kujacic.courses.service.StorageService;
 import com.kujacic.courses.utils.VideoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -23,14 +23,11 @@ import software.amazon.awssdk.services.s3.model.*;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class VideoService {
+public class VideoService implements StorageService {
 
     private final VideoUtils videoUtils;
     private final S3Client s3Client;

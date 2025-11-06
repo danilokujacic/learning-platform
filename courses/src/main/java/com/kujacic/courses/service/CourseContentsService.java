@@ -1,7 +1,6 @@
 package com.kujacic.courses.service;
 
 import com.kujacic.courses.dto.content.ContentResponseDTO;
-import com.kujacic.courses.dto.video.VideoMetadata;
 import com.kujacic.courses.exception.CourseContentExistForLevel;
 import com.kujacic.courses.exception.CourseLevelNotFoundException;
 import com.kujacic.courses.exception.VideoProcessingError;
@@ -9,11 +8,10 @@ import com.kujacic.courses.model.CourseContent;
 import com.kujacic.courses.model.CourseLevel;
 import com.kujacic.courses.repository.CourseContentRepository;
 import com.kujacic.courses.repository.CourseLevelsRepository;
+import com.kujacic.courses.service.impl.VideoService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,7 +25,7 @@ import java.util.UUID;
 public class CourseContentsService {
     private final CourseContentRepository courseContentRepository;
     private final CourseLevelsRepository courseLevelsRepository;
-    private final VideoService videoService;
+    private final StorageService videoService;
 
 
 
