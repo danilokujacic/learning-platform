@@ -37,11 +37,6 @@ public class UserPublisherTest {
         String userId = UUID.randomUUID().toString();
         userPublisher.requestCertificate(courseId, userId);
 
-        CourseCertificateRequest certificateRequest = CourseCertificateRequest.builder()
-                .userId(userId)
-                .courseId(courseId)
-                .build();
-
         ArgumentCaptor<CourseCertificateRequest> captor =
                 ArgumentCaptor.forClass(CourseCertificateRequest.class);
 

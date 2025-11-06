@@ -1,7 +1,22 @@
 server:
   port: 8083
 
+aws:
+  s3:
+    bucket-name: ${AWS_S3_BUCKET_NAME}
+    region: ${AWS_S3_BUCKET_REGION}
+  access-key-id: ${AWS_ACCESS_KEY_ID:}
+  secret-access-key: ${AWS_SECRET_ACCESS_KEY:}
+video:
+  upload:
+    allowed-extensions: mp4,avi,mov,mkv,wmv,flv,webm
+    max-file-size-mb: 500
 spring:
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+      enabled: true
   application:
     name: course-service
   config:

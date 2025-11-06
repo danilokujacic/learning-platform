@@ -1,5 +1,6 @@
 package com.kujacic.users.unit;
 
+import com.kujacic.users.factory.AchievementFactory;
 import com.kujacic.users.model.Achievement;
 import com.kujacic.users.repository.AchievementRepository;
 import com.kujacic.users.service.AchievementService;
@@ -9,6 +10,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -20,6 +22,8 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class AchievementsServiceTest {
 
+    private final AchievementFactory achievementFactory = new AchievementFactory();
+
     @Mock
     private AchievementRepository achievementRepository;
 
@@ -29,7 +33,7 @@ public class AchievementsServiceTest {
     @Test
     public void achievementsService_shouldCreateAchievementWithProperData() {
         String userId = UUID.randomUUID().toString();
-        Achievement achievement = Achievement.builder().userId(userId).id(1L).certificateId(1L).build();
+        Achievement achievement = achievementFactory.createAchievement(userId);
 
         when(achievementRepository.save(any())).thenReturn(achievement);
 

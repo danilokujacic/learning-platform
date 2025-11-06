@@ -22,18 +22,22 @@ public class CourseCertificateService {
 
 
     public CourseCertificateResponse createCourseCertificate(Integer courseId, CreateCertificateRequest createCertificateRequest) {
-        Optional<Course> course = courseRepository.findById(courseId);
-        if(course.isEmpty()) throw new CourseNotFoundException("Course doesn't exist");
+        Course course = courseRepository.findById(courseId).orElseThrow(() -> new CourseNotFoundException("Course doesn't exist"));
+
         Optional<CourseCertificate> certificate = courseCertificateRepository.findByCourseId(courseId);
         if(certificate.isPresent()) throw new CertificateAlreadyExistsException();
-        CourseCertificate certificateToSave = new CourseCertificate();
-        BeanUtils.copyProperties(createCertificateRequest, certificateToSave);
-        certificateToSave.setCourse(course.get());
-        CourseCertificate newCertificate = courseCertificateRepository.save(certificateToSave);
-        CourseCertificateResponse certificateResponse = new CourseCertificateResponse();
-        BeanUtils.copyProperties(newCertificate, certificateResponse);
-        return certificateResponse;
 
+        CourseCertificate newCertificate = CourseCertificate.builder()
+                .name(createCertificateRequest.getName())
+                .course(course)
+                .build();
+        CourseCertificate savedCertificate = courseCertificateRepository.save(newCertificate);
+
+        return CourseCertificateResponse.builder()
+                .id(savedCertificate.getId())
+                .name(savedCertificate.getName())
+                .referenceUrl(savedCertificate.getReferenceUrl())
+                .build();
     }
 
     public CourseCertificateResponse getCertificate(Long certificateId) {
