@@ -2,6 +2,7 @@ package com.kujacic.courses.service;
 
 import com.kujacic.courses.dto.video.VideoChunk;
 import com.kujacic.courses.dto.video.VideoMetadata;
+import com.kujacic.courses.utils.VideoUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import java.util.UUID;
 @Slf4j
 public class VideoService {
 
+    private final VideoUtils videoUtils;
     private final S3Client s3Client;
 
     private static final long CHUNK_SIZE = 1024 * 1024; // 1MB chunks
@@ -46,11 +48,11 @@ public class VideoService {
 
     public String uploadVideo(String contentId,  MultipartFile file) throws IOException {
         // Validate file
-        validateVideo(file);
+        videoUtils.validateVideo(file);
 
         // Generate unique file name
         String originalFilename = file.getOriginalFilename();
-        String fileExtension = getFileExtension(originalFilename);
+        String fileExtension = videoUtils.getFileExtension(originalFilename);
         String uniqueFileName = contentId + "." + fileExtension;
         String s3Key = "videos/" + uniqueFileName;
 
@@ -78,76 +80,15 @@ public class VideoService {
         }
     }
 
-    private void validateVideo(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new IllegalArgumentException("File cannot be empty");
-        }
-
-        long fileSizeInMb = file.getSize() / (1024 * 1024);
-        if (fileSizeInMb > maxFileSizeMb) {
-            throw new IllegalArgumentException(
-                    String.format("File size exceeds maximum allowed size of %d MB", maxFileSizeMb));
-        }
-
-        String filename = file.getOriginalFilename();
-        if (filename == null || filename.isEmpty()) {
-            throw new IllegalArgumentException("Filename cannot be empty");
-        }
-
-        String fileExtension = getFileExtension(filename).toLowerCase();
-        List<String> allowedExtensionsList = Arrays.asList(allowedExtensions.split(","));
-
-        if (!allowedExtensionsList.contains(fileExtension)) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid file type. Allowed types: %s", allowedExtensions));
-        }
-
-        String contentType = file.getContentType();
-        if (contentType == null || !contentType.startsWith("video/")) {
-            throw new IllegalArgumentException("File must be a video");
-        }
-    }
-
-    private String getFileExtension(String filename) {
-        if (filename == null || !filename.contains(".")) {
-            throw new IllegalArgumentException("Invalid filename");
-        }
-        return filename.substring(filename.lastIndexOf(".") + 1);
-    }
-
-    public VideoMetadata getVideoMetadata(String videoKey) {
-        try {
-            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(videoKey)
-                    .build();
-
-            HeadObjectResponse headObjectResponse = s3Client.headObject(headObjectRequest);
-
-            return VideoMetadata.builder()
-                    .contentLength(headObjectResponse.contentLength())
-                    .contentType(headObjectResponse.contentType())
-                    .fileName(extractFileName(videoKey))
-                    .build();
-
-        } catch (NoSuchKeyException e) {
-            log.error("Video not found: {}", videoKey);
-            throw new RuntimeException("Video not found: " + videoKey);
-        } catch (S3Exception e) {
-            log.error("Error fetching video metadata: {}", e.getMessage(), e);
-            throw new RuntimeException("Error fetching video metadata");
-        }
-    }
-
     public ResponseEntity<byte[]> streamVideo(String videoId, String rangeHeader) {
         try {
             String videoKey = "videos/" + videoId + ".mp4";
             log.info("Video id {}", videoId);
-            if (!videoExists(videoKey)) {
+            if (!videoUtils.videoExists(videoKey)) {
                 return ResponseEntity.notFound().build();
             }
 
-            VideoMetadata metadata = getVideoMetadata(videoKey);
+            VideoMetadata metadata = videoUtils.getVideoMetadata(videoKey);
             long fileSize = metadata.getContentLength();
 
             if (rangeHeader == null) {
@@ -166,11 +107,11 @@ public class VideoService {
         try {
             String videoKey = "videos/" + videoId + ".mp4";
 
-            if (!videoExists(videoKey)) {
+            if (!videoUtils.videoExists(videoKey)) {
                 return ResponseEntity.notFound().build();
             }
 
-            VideoMetadata metadata = getVideoMetadata(videoKey);
+            VideoMetadata metadata = videoUtils.getVideoMetadata(videoKey);
             InputStreamResource resource = new InputStreamResource(getFullVideo(videoKey));
 
             return ResponseEntity.ok()
@@ -185,7 +126,7 @@ public class VideoService {
         }
     }
 
-    public InputStream getFullVideo(String videoKey) {
+    private InputStream getFullVideo(String videoKey) {
         try {
             GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                     .bucket(bucketName)
@@ -201,7 +142,7 @@ public class VideoService {
         }
     }
 
-    public ResponseEntity<byte[]> streamFullVideo(String videoKey, VideoMetadata metadata) {
+    private ResponseEntity<byte[]> streamFullVideo(String videoKey, VideoMetadata metadata) {
         long chunkSize = Math.min(1024 * 1024 * 10, metadata.getContentLength());
         VideoChunk chunk = getVideoChunk(videoKey, 0, chunkSize - 1);
 
@@ -218,7 +159,7 @@ public class VideoService {
                 .body(chunk.getData());
     }
 
-    public ResponseEntity<byte[]> streamVideoWithRange(
+    private ResponseEntity<byte[]> streamVideoWithRange(
             String videoKey, String rangeHeader, long fileSize, VideoMetadata metadata) {
 
         try {
@@ -270,9 +211,9 @@ public class VideoService {
         }
     }
 
-    public VideoChunk getVideoChunk(String videoKey, long start, long end) {
+    private VideoChunk getVideoChunk(String videoKey, long start, long end) {
         try {
-            VideoMetadata metadata = getVideoMetadata(videoKey);
+            VideoMetadata metadata = videoUtils.getVideoMetadata(videoKey);
             long contentLength = metadata.getContentLength();
 
             // Adjust end if it exceeds content length
@@ -310,25 +251,4 @@ public class VideoService {
         }
     }
 
-    public boolean videoExists(String videoKey) {
-        try {
-            HeadObjectRequest headObjectRequest = HeadObjectRequest.builder()
-                    .bucket(bucketName)
-                    .key(videoKey)
-                    .build();
-
-            s3Client.headObject(headObjectRequest);
-            return true;
-
-        } catch (NoSuchKeyException e) {
-            return false;
-        } catch (S3Exception e) {
-            log.error("Error checking video existence: {}", e.getMessage(), e);
-            return false;
-        }
-    }
-
-    private String extractFileName(String videoKey) {
-        return videoKey.substring(videoKey.lastIndexOf("/") + 1);
-    }
 }
