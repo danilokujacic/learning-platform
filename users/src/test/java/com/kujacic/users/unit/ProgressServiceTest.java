@@ -3,6 +3,7 @@ package com.kujacic.users.unit;
 import com.kujacic.users.dto.progress.ProgressResponseDTO;
 import com.kujacic.users.dto.rabbitmq.CourseLevelPassEvent;
 import com.kujacic.users.exception.CouldNotParseExcelException;
+import com.kujacic.users.factory.ProgressFactory;
 import com.kujacic.users.model.Progress;
 import com.kujacic.users.repository.ProgressRepository;
 import com.kujacic.users.service.ProgressService;
@@ -13,6 +14,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.IOException;
 import java.util.List;
@@ -25,6 +27,8 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class ProgressServiceTest {
 
+    private final ProgressFactory progressFactory = new ProgressFactory();
+
     @Mock
     private ProgressRepository progressRepository;
 
@@ -36,7 +40,7 @@ public class ProgressServiceTest {
         try(MockedStatic<DocumentUtils> utils = mockStatic(DocumentUtils.class)) {
             byte[] expectedDocument = new byte[]{1, 2, 3};
             String uuid = UUID.randomUUID().toString();
-            Progress progress = Progress.builder().id(1).userId(uuid).progress(25).courseName("Test").courseId(7).build();
+            Progress progress = progressFactory.createProgress(uuid);
 
             when(progressRepository.findByUserId(uuid)).thenReturn(List.of(progress));
             utils.when(() -> DocumentUtils.generateProgressDocument(List.of(progress))).thenReturn(expectedDocument);
@@ -50,7 +54,7 @@ public class ProgressServiceTest {
     public void progressService_shouldThrowCouldNotParseErrorOnIOException() {
         try(MockedStatic<DocumentUtils> utils = mockStatic(DocumentUtils.class)) {
             String uuid = UUID.randomUUID().toString();
-            Progress progress = Progress.builder().id(1).userId(uuid).progress(25).courseName("Test").courseId(7).build();
+            Progress progress = progressFactory.createProgress(uuid);
 
             when(progressRepository.findByUserId(uuid)).thenReturn(List.of(progress));
             utils.when(() -> DocumentUtils.generateProgressDocument(List.of(progress))).thenThrow(new IOException("Failed to generate document"));
@@ -63,10 +67,25 @@ public class ProgressServiceTest {
     @Test
     public void progressService_shouldUpdateProgressValueIfExistsOnCreateProgress() {
         String userUUID = UUID.randomUUID().toString();
-        CourseLevelPassEvent courseLevelPassEvent = CourseLevelPassEvent.builder().userId(userUUID).courseId(1).levelId(1L).courseName("Test course").progress(25).build();
-        Progress progress = Progress.builder().id(1).courseId(1).userId(userUUID).progress(25).courseName("Test Course").build();
-        ProgressResponseDTO foundProgress = ProgressResponseDTO.builder().id(1).courseId(1).userId(userUUID).progress(progress.getProgress() + courseLevelPassEvent.getProgress()).build();
+        CourseLevelPassEvent courseLevelPassEvent = CourseLevelPassEvent.builder()
+                .userId(userUUID)
+                .courseId(1)
+                .levelId(1L)
+                .courseName("Test course")
+                .progress(25)
+                .build();
+
+        Progress progress = progressFactory.createProgress(userUUID);
+
+        ProgressResponseDTO foundProgress = ProgressResponseDTO.builder()
+                .id(1)
+                .courseId(1)
+                .userId(userUUID)
+                .progress(progress.getProgress() + courseLevelPassEvent.getProgress())
+                .build();
+
         when(progressRepository.findByCourseIdAndUserId(courseLevelPassEvent.getCourseId(), courseLevelPassEvent.getUserId())).thenReturn(Optional.ofNullable(progress));
+
         ProgressResponseDTO returnProgress = progressService.createProgress(courseLevelPassEvent);
         assertEquals(returnProgress.getCourseId(), foundProgress.getCourseId());
         assertEquals(returnProgress.getProgress(),foundProgress.getProgress() );
