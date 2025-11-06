@@ -8,7 +8,6 @@ spring: # Fixed indentation
   cloud:
     gateway:
       routes:
-        # Route for User Service
         - id: user-service
           uri: lb://user-service
           predicates:
@@ -17,11 +16,18 @@ spring: # Fixed indentation
             - TokenRelay=
             - RemoveRequestHeader=Cookie
 
-        # Route for Order Service
         - id: course-service
           uri: lb://course-service
           predicates:
             - Path=/api/courses/**
+          filters:
+            - TokenRelay=
+            - RemoveRequestHeader=Cookie
+
+        - id: course-video
+          uri: lb://course-service
+          predicates:
+            - Path=/api/videos/**
           filters:
             - TokenRelay=
             - RemoveRequestHeader=Cookie

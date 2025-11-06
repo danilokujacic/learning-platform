@@ -3,6 +3,8 @@ package com.kujacic.courses.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "course_levels")
 @Builder
@@ -18,6 +20,9 @@ public class CourseLevel {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id")
     private Course course;
+
+    @OneToMany(mappedBy = "courseLevel", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CourseContent> courseContents;
 
     @Column
     private String name;
