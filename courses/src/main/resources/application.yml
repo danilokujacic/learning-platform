@@ -23,9 +23,9 @@ spring:
     import: optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/users
-    username: postgres
-    password: postgres
+    url: jdbc:postgresql://localhost:5432/courses
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
   # JPA specific for user-service
   jpa:

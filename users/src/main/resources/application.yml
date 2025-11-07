@@ -9,8 +9,8 @@ spring:
   # User Service Database
   datasource:
     url: jdbc:postgresql://localhost:5432/users
-    username: postgres
-    password: postgres
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
 
   # JPA specific for user-service
   jpa:
