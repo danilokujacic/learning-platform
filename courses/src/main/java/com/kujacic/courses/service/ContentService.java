@@ -4,11 +4,10 @@ import com.kujacic.courses.dto.content.ContentResponseDTO;
 import com.kujacic.courses.exception.CourseContentExistForLevel;
 import com.kujacic.courses.exception.CourseLevelNotFoundException;
 import com.kujacic.courses.exception.VideoProcessingError;
-import com.kujacic.courses.model.CourseContent;
-import com.kujacic.courses.model.CourseLevel;
-import com.kujacic.courses.repository.CourseContentRepository;
-import com.kujacic.courses.repository.CourseLevelsRepository;
-import com.kujacic.courses.service.impl.VideoService;
+import com.kujacic.courses.model.Content;
+import com.kujacic.courses.model.Level;
+import com.kujacic.courses.repository.ContentRepository;
+import com.kujacic.courses.repository.LevelRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -22,35 +21,35 @@ import java.util.UUID;
 @Getter
 @Setter
 @RequiredArgsConstructor
-public class CourseContentsService {
-    private final CourseContentRepository courseContentRepository;
-    private final CourseLevelsRepository courseLevelsRepository;
+public class ContentService {
+    private final ContentRepository contentRepository;
+    private final LevelRepository levelRepository;
     private final StorageService videoService;
 
 
 
     public ContentResponseDTO createContent(Long courseLevelId, MultipartFile file){
-            Boolean contentExistForLevel = courseContentRepository.existByCourseLevelId(courseLevelId);
+            Boolean contentExistForLevel = contentRepository.existByCourseLevelId(courseLevelId);
             if(contentExistForLevel) throw new CourseContentExistForLevel();
-            CourseLevel courseLevel = courseLevelsRepository.findById(courseLevelId).orElseThrow(() -> new CourseLevelNotFoundException("Course level not found"));
+            Level level = levelRepository.findById(courseLevelId).orElseThrow(() -> new CourseLevelNotFoundException("Course level not found"));
 
             try {
                 UUID contentId = UUID.randomUUID();
                 String url = videoService.uploadVideo(contentId.toString(), file);
-                CourseContent courseContent = CourseContent.builder()
+                Content content = Content.builder()
                         .id(contentId)
-                        .courseLevel(courseLevel)
+                        .level(level)
                         .url(url)
                         .build();
 
 
 
-                CourseContent savedCourseContent = courseContentRepository.save(courseContent);
+                Content savedContent = contentRepository.save(content);
 
                 return ContentResponseDTO.builder()
-                        .id(savedCourseContent.getId().toString())
-                        .courseLevelId(savedCourseContent.getCourseLevel().getId())
-                        .url(savedCourseContent.getUrl())
+                        .id(savedContent.getId().toString())
+                        .courseLevelId(savedContent.getLevel().getId())
+                        .url(savedContent.getUrl())
                         .build();
             }catch(IOException err){
                 throw new VideoProcessingError();

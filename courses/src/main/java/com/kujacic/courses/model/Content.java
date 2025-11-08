@@ -12,7 +12,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CourseContent {
+public class Content {
 
     @Id
     private UUID id;
@@ -22,5 +22,5 @@ public class CourseContent {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_level")
-    private CourseLevel courseLevel;
+    private Level level;
 }

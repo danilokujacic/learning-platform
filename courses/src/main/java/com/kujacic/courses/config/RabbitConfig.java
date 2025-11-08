@@ -14,22 +14,17 @@ import org.springframework.amqp.support.converter.MessageConverter;
 @Slf4j
 public class RabbitConfig {
     @Bean
-    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, MessageConverter messageConverter) {
+    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate template = new RabbitTemplate(connectionFactory);
-        template.setMessageConverter(messageConverter);
-        template.setConfirmCallback((correlationData, ack, cause) -> {
-            if (ack) {
-                log.info("Message confirmed: {}", correlationData);
-            } else {
-                log.error("Message not confirmed: {}, cause: {}", correlationData, cause);
-            }
-        });
 
         template.setReturnsCallback(returned -> {
-            log.error("Message returned: {}", returned.getMessage());
+            log.error("Message returned! Exchange: {}, RoutingKey: {}, ReplyCode: {}, ReplyText: {}",
+                    returned.getExchange(),
+                    returned.getRoutingKey(),
+                    returned.getReplyCode(),
+                    returned.getReplyText());
         });
 
-        template.setMandatory(true);
         return template;
     }
 

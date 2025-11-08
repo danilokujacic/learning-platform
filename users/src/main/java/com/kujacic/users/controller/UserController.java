@@ -27,11 +27,6 @@ import java.util.stream.Collectors;
 public class UserController {
     private final UserService userService;
 
-    @GetMapping("/me")
-    public void getCurrentUser(@AuthenticationPrincipal Jwt jwt) {
-        // TO BE IMPLEMENTED
-    }
-
     @GetMapping("/my-courses")
     public PagedResponse<CourseResponseDTO> getCourses(
             @AuthenticationPrincipal Jwt jwt,

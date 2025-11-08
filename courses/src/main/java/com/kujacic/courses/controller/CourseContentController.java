@@ -1,7 +1,7 @@
 package com.kujacic.courses.controller;
 
 import com.kujacic.courses.dto.content.ContentResponseDTO;
-import com.kujacic.courses.service.CourseContentsService;
+import com.kujacic.courses.service.ContentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
@@ -15,7 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Slf4j
 public class CourseContentController {
 
-    private final CourseContentsService courseContentService;
+    private final ContentService courseContentService;
 
 
     @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

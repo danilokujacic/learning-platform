@@ -31,7 +31,6 @@ public class AWSConfig {
     }
 
     private AwsCredentialsProvider awsCredentialsProvider() {
-        // If credentials are provided explicitly, use them
         if (accessKeyId != null && !accessKeyId.isEmpty()
                 && secretAccessKey != null && !secretAccessKey.isEmpty()) {
             AwsBasicCredentials credentials = AwsBasicCredentials.create(accessKeyId, secretAccessKey);

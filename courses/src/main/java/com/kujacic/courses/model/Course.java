@@ -29,5 +29,5 @@ public class Course {
     private CourseLevels level = CourseLevels.JUNIOR;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CourseLevel> courseLevels;
+    private List<Level> levels;
 }

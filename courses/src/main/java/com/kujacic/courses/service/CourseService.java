@@ -16,7 +16,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -46,7 +45,7 @@ public class CourseService {
         log.info("COURSE ID: {}", id);
         Course course = courseRepository.findCourseByIdWithLevels(id).orElseThrow(() -> new CourseNotFoundException("Course is not found"));
 
-        List<CourseLevelResponse> levels =  course.getCourseLevels().stream()
+        List<CourseLevelResponse> levels =  course.getLevels().stream()
                 .map(level -> CourseLevelResponse.builder()
                         .id(level.getId())
                         .name(level.getName())

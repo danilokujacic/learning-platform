@@ -32,12 +32,14 @@ public class UserListener {
         try {
             log.info("Processing user progress");
             ProgressResponseDTO progress = progressService.createProgress(courseLevel);
-            if(progress.getProgress() >= 100) {
+            boolean isCourseFinished = progress.getProgress() >= 100;
+            if(isCourseFinished) {
                 log.info("Course {} passed, requesting certificate for user {}", courseLevel.getCourseId(), courseLevel.getUserId());
                 userPublisher.requestCertificate(courseLevel.getCourseId(), courseLevel.getUserId());
-
+            } else {
+                log.info("Added progress: {}", progress.getId());
             }
-            log.info("Added progress: {}", progress.getId());
+
         } finally {
             MDC.clear();
         }

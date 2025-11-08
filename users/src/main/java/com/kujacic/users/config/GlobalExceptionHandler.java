@@ -2,15 +2,14 @@ package com.kujacic.users.config;
 
 import com.kujacic.users.dto.error.ErrorResponseDTO;
 import com.kujacic.users.dto.error.ValidationErrorResponseDTO;
+import com.kujacic.users.exception.CouldNotParseExcelException;
 import com.kujacic.users.exception.ProgressNotFoundException;
 import com.kujacic.users.exception.ResourceNotFoundException;
 import com.kujacic.users.exception.ServiceUnavailableException;
-import feign.FeignException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -22,7 +21,6 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorResponseDTO> handleValidationErrors(
             MethodArgumentNotValidException ex) {
@@ -66,7 +64,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ProgressNotFoundException.class)
+    @ExceptionHandler({ProgressNotFoundException.class, ResourceNotFoundException.class})
     public ResponseEntity<ErrorResponseDTO> handleProgressNotFound(
             ProgressNotFoundException ex) {
         ErrorResponseDTO error = new ErrorResponseDTO(
@@ -77,15 +75,15 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponseDTO> handleResourceNotFound(
-            ResourceNotFoundException ex) {
+    @ExceptionHandler(CouldNotParseExcelException.class)
+    public ResponseEntity<ErrorResponseDTO> handleNotParse(CouldNotParseExcelException ex) {
         ErrorResponseDTO error = new ErrorResponseDTO(
-                HttpStatus.NOT_FOUND.value(),
+                HttpStatus.BAD_REQUEST.value(),
                 ex.getMessage(),
                 LocalDateTime.now()
         );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(ServiceUnavailableException.class)
@@ -97,17 +95,6 @@ public class GlobalExceptionHandler {
                 LocalDateTime.now()
         );
         return new ResponseEntity<>(error, HttpStatus.SERVICE_UNAVAILABLE);
-    }
-
-    @ExceptionHandler(FeignException.NotFound.class)
-    public ResponseEntity<ErrorResponseDTO> handleFeignNotFound(
-            FeignException.NotFound ex) {
-        ErrorResponseDTO error = new ErrorResponseDTO(
-                HttpStatus.NOT_FOUND.value(),
-                "Requested resource not found in external service",
-                LocalDateTime.now()
-        );
-        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(Exception.class)

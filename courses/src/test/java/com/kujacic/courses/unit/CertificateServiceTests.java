@@ -5,10 +5,10 @@ import com.kujacic.courses.dto.courseCertificate.CreateCertificateRequest;
 import com.kujacic.courses.exception.CertificateAlreadyExistsException;
 import com.kujacic.courses.exception.CourseNotFoundException;
 import com.kujacic.courses.model.Course;
-import com.kujacic.courses.model.CourseCertificate;
-import com.kujacic.courses.repository.CourseCertificateRepository;
+import com.kujacic.courses.model.Certificate;
+import com.kujacic.courses.repository.CertificateRepository;
 import com.kujacic.courses.repository.CourseRepository;
-import com.kujacic.courses.service.CourseCertificateService;
+import com.kujacic.courses.service.CertificateService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -24,16 +24,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CourseCertificateServiceTests {
+class CertificateServiceTests {
 
     @Mock
-    private CourseCertificateRepository courseCertificateRepository;
+    private CertificateRepository certificateRepository;
 
     @Mock
     private CourseRepository courseRepository;
 
     @InjectMocks
-    private CourseCertificateService courseCertificateService;
+    private CertificateService certificateService;
 
     @Test
     void shouldCreateCourseCertificateSuccessfully() {
@@ -42,22 +42,22 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Spring Boot Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(1L);
             return cert;
         });
 
-        CourseCertificateResponse response = courseCertificateService.createCourseCertificate(courseId, request);
+        CourseCertificateResponse response = certificateService.createCourseCertificate(courseId, request);
 
         assertNotNull(response);
         assertEquals(1L, response.getId());
         assertEquals("Certificate of Completion", response.getName());
 
         verify(courseRepository).findById(courseId);
-        verify(courseCertificateRepository).findByCourseId(courseId);
-        verify(courseCertificateRepository).save(any(CourseCertificate.class));
+        verify(certificateRepository).findByCourseId(courseId);
+        verify(certificateRepository).save(any(Certificate.class));
     }
 
     @Test
@@ -68,12 +68,12 @@ class CourseCertificateServiceTests {
         when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
 
         CourseNotFoundException exception = assertThrows(CourseNotFoundException.class, () -> {
-            courseCertificateService.createCourseCertificate(courseId, request);
+            certificateService.createCourseCertificate(courseId, request);
         });
 
         assertEquals("Course doesn't exist", exception.getMessage());
         verify(courseRepository).findById(courseId);
-        verify(courseCertificateRepository, never()).save(any());
+        verify(certificateRepository, never()).save(any());
     }
 
     @Test
@@ -81,18 +81,18 @@ class CourseCertificateServiceTests {
         Integer courseId = 1;
         CreateCertificateRequest request = createCertificateRequest("Test Certificate", "https://example.com");
         Course course = createCourse(courseId, "Test Course");
-        CourseCertificate existingCertificate = createCourseCertificate(1L, "Existing Certificate", course);
+        Certificate existingCertificate = createCourseCertificate(1L, "Existing Certificate", course);
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.of(existingCertificate));
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.of(existingCertificate));
 
         assertThrows(CertificateAlreadyExistsException.class, () -> {
-            courseCertificateService.createCourseCertificate(courseId, request);
+            certificateService.createCourseCertificate(courseId, request);
         });
 
         verify(courseRepository).findById(courseId);
-        verify(courseCertificateRepository).findByCourseId(courseId);
-        verify(courseCertificateRepository, never()).save(any());
+        verify(certificateRepository).findByCourseId(courseId);
+        verify(certificateRepository, never()).save(any());
     }
 
     @Test
@@ -104,19 +104,19 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Java Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(5L);
             return cert;
         });
 
-        courseCertificateService.createCourseCertificate(courseId, request);
+        certificateService.createCourseCertificate(courseId, request);
 
-        ArgumentCaptor<CourseCertificate> certificateCaptor = ArgumentCaptor.forClass(CourseCertificate.class);
-        verify(courseCertificateRepository).save(certificateCaptor.capture());
+        ArgumentCaptor<Certificate> certificateCaptor = ArgumentCaptor.forClass(Certificate.class);
+        verify(certificateRepository).save(certificateCaptor.capture());
 
-        CourseCertificate savedCertificate = certificateCaptor.getValue();
+        Certificate savedCertificate = certificateCaptor.getValue();
         assertEquals(certificateName, savedCertificate.getName());
         assertEquals(course, savedCertificate.getCourse());
     }
@@ -128,15 +128,15 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Test Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(10L);
             cert.setReferenceUrl("https://test.com");
             return cert;
         });
 
-        CourseCertificateResponse response = courseCertificateService.createCourseCertificate(courseId, request);
+        CourseCertificateResponse response = certificateService.createCourseCertificate(courseId, request);
 
         assertNotNull(response);
         assertEquals(10L, response.getId());
@@ -148,45 +148,45 @@ class CourseCertificateServiceTests {
     void shouldGetCertificateById() {
         Long certificateId = 1L;
         Course course = createCourse(1, "Test Course");
-        CourseCertificate certificate = createCourseCertificate(certificateId, "Certificate", course);
+        Certificate certificate = createCourseCertificate(certificateId, "Certificate", course);
         certificate.setReferenceUrl("https://example.com/cert");
 
-        when(courseCertificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
+        when(certificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
 
-        CourseCertificateResponse response = courseCertificateService.getCertificate(certificateId);
+        CourseCertificateResponse response = certificateService.getCertificate(certificateId);
 
         assertNotNull(response);
         assertEquals(certificateId, response.getId());
         assertEquals("Certificate", response.getName());
         assertEquals("https://example.com/cert", response.getReferenceUrl());
 
-        verify(courseCertificateRepository).findById(certificateId);
+        verify(certificateRepository).findById(certificateId);
     }
 
     @Test
     void shouldThrowExceptionWhenCertificateNotFound() {
         Long certificateId = 999L;
 
-        when(courseCertificateRepository.findById(certificateId)).thenReturn(Optional.empty());
+        when(certificateRepository.findById(certificateId)).thenReturn(Optional.empty());
 
         RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            courseCertificateService.getCertificate(certificateId);
+            certificateService.getCertificate(certificateId);
         });
 
         assertEquals("Certificate not found", exception.getMessage());
-        verify(courseCertificateRepository).findById(certificateId);
+        verify(certificateRepository).findById(certificateId);
     }
 
     @Test
     void shouldCopyAllPropertiesWhenGettingCertificate() {
         Long certificateId = 5L;
         Course course = createCourse(1, "Java Course");
-        CourseCertificate certificate = createCourseCertificate(certificateId, "Java Certificate", course);
+        Certificate certificate = createCourseCertificate(certificateId, "Java Certificate", course);
         certificate.setReferenceUrl("https://java-certs.com/5");
 
-        when(courseCertificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
+        when(certificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
 
-        CourseCertificateResponse response = courseCertificateService.getCertificate(certificateId);
+        CourseCertificateResponse response = certificateService.getCertificate(certificateId);
 
         assertEquals(certificateId, response.getId());
         assertEquals("Java Certificate", response.getName());
@@ -197,10 +197,10 @@ class CourseCertificateServiceTests {
     void shouldDeleteCertificateById() {
         Long certificateId = 1L;
 
-        Void result = courseCertificateService.deleteCertificate(certificateId);
+        Void result = certificateService.deleteCertificate(certificateId);
 
         assertNull(result);
-        verify(courseCertificateRepository).deleteById(certificateId);
+        verify(certificateRepository).deleteById(certificateId);
     }
 
     @Test
@@ -209,22 +209,22 @@ class CourseCertificateServiceTests {
         Long certificateId2 = 2L;
         Long certificateId3 = 3L;
 
-        courseCertificateService.deleteCertificate(certificateId1);
-        courseCertificateService.deleteCertificate(certificateId2);
-        courseCertificateService.deleteCertificate(certificateId3);
+        certificateService.deleteCertificate(certificateId1);
+        certificateService.deleteCertificate(certificateId2);
+        certificateService.deleteCertificate(certificateId3);
 
-        verify(courseCertificateRepository).deleteById(certificateId1);
-        verify(courseCertificateRepository).deleteById(certificateId2);
-        verify(courseCertificateRepository).deleteById(certificateId3);
+        verify(certificateRepository).deleteById(certificateId1);
+        verify(certificateRepository).deleteById(certificateId2);
+        verify(certificateRepository).deleteById(certificateId3);
     }
 
     @Test
     void shouldCallDeleteByIdOnce() {
         Long certificateId = 10L;
 
-        courseCertificateService.deleteCertificate(certificateId);
+        certificateService.deleteCertificate(certificateId);
 
-        verify(courseCertificateRepository, times(1)).deleteById(certificateId);
+        verify(certificateRepository, times(1)).deleteById(certificateId);
     }
 
     @Test
@@ -236,17 +236,17 @@ class CourseCertificateServiceTests {
 
         when(courseRepository.findById(1)).thenReturn(Optional.of(course1));
         when(courseRepository.findById(2)).thenReturn(Optional.of(course2));
-        when(courseCertificateRepository.findByCourseId(any())).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(any())).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(1L);
             return cert;
         });
 
-        courseCertificateService.createCourseCertificate(1, request);
-        courseCertificateService.createCourseCertificate(2, request);
+        certificateService.createCourseCertificate(1, request);
+        certificateService.createCourseCertificate(2, request);
 
-        verify(courseCertificateRepository, times(2)).save(any(CourseCertificate.class));
+        verify(certificateRepository, times(2)).save(any(Certificate.class));
     }
 
 
@@ -257,11 +257,11 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Test Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any())).thenThrow(new RuntimeException("Database error"));
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any())).thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class, () -> {
-            courseCertificateService.createCourseCertificate(courseId, request);
+            certificateService.createCourseCertificate(courseId, request);
         });
 
         verify(courseRepository).findById(courseId);
@@ -271,11 +271,11 @@ class CourseCertificateServiceTests {
     void shouldHandleRepositoryExceptionDuringGet() {
         Long certificateId = 1L;
 
-        when(courseCertificateRepository.findById(certificateId))
+        when(certificateRepository.findById(certificateId))
                 .thenThrow(new RuntimeException("Database connection failed"));
 
         assertThrows(RuntimeException.class, () -> {
-            courseCertificateService.getCertificate(certificateId);
+            certificateService.getCertificate(certificateId);
         });
     }
 
@@ -286,14 +286,14 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Test Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(1L);
             return cert;
         });
 
-        CourseCertificateResponse response = courseCertificateService.createCourseCertificate(courseId, request);
+        CourseCertificateResponse response = certificateService.createCourseCertificate(courseId, request);
 
         assertEquals("ABC", response.getName());
     }
@@ -306,14 +306,14 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Test Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(1L);
             return cert;
         });
 
-        CourseCertificateResponse response = courseCertificateService.createCourseCertificate(courseId, request);
+        CourseCertificateResponse response = certificateService.createCourseCertificate(courseId, request);
 
         assertEquals(longName, response.getName());
     }
@@ -325,28 +325,28 @@ class CourseCertificateServiceTests {
         Course course = createCourse(courseId, "Test Course");
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseCertificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.save(any(CourseCertificate.class))).thenAnswer(invocation -> {
-            CourseCertificate cert = invocation.getArgument(0);
+        when(certificateRepository.findByCourseId(courseId)).thenReturn(Optional.empty());
+        when(certificateRepository.save(any(Certificate.class))).thenAnswer(invocation -> {
+            Certificate cert = invocation.getArgument(0);
             cert.setId(1L);
             return cert;
         });
 
-        courseCertificateService.createCourseCertificate(courseId, request);
+        certificateService.createCourseCertificate(courseId, request);
 
-        verify(courseCertificateRepository).findByCourseId(eq(courseId));
+        verify(certificateRepository).findByCourseId(eq(courseId));
     }
 
     @Test
     void shouldReturnNullReferenceUrlWhenNotSet() {
         Long certificateId = 1L;
         Course course = createCourse(1, "Test Course");
-        CourseCertificate certificate = createCourseCertificate(certificateId, "Certificate", course);
+        Certificate certificate = createCourseCertificate(certificateId, "Certificate", course);
         certificate.setReferenceUrl(null);
 
-        when(courseCertificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
+        when(certificateRepository.findById(certificateId)).thenReturn(Optional.of(certificate));
 
-        CourseCertificateResponse response = courseCertificateService.getCertificate(certificateId);
+        CourseCertificateResponse response = certificateService.getCertificate(certificateId);
 
         assertNull(response.getReferenceUrl());
     }
@@ -365,8 +365,8 @@ class CourseCertificateServiceTests {
         return course;
     }
 
-    private CourseCertificate createCourseCertificate(Long id, String name, Course course) {
-        return CourseCertificate.builder()
+    private Certificate createCourseCertificate(Long id, String name, Course course) {
+        return Certificate.builder()
                 .id(id)
                 .name(name)
                 .course(course)

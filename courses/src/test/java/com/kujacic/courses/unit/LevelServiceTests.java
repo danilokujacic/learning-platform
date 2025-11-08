@@ -5,10 +5,10 @@ import com.kujacic.courses.enums.CourseLevels;
 import com.kujacic.courses.exception.CourseLevelNotFoundException;
 import com.kujacic.courses.exception.CourseNotFoundException;
 import com.kujacic.courses.model.Course;
-import com.kujacic.courses.model.CourseLevel;
-import com.kujacic.courses.repository.CourseLevelsRepository;
+import com.kujacic.courses.model.Level;
+import com.kujacic.courses.repository.LevelRepository;
 import com.kujacic.courses.repository.CourseRepository;
-import com.kujacic.courses.service.CourseLevelsService;
+import com.kujacic.courses.service.LevelService;
 import com.kujacic.courses.service.CoursePublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,10 +24,10 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class CourseLevelServiceTests {
+class LevelServiceTests {
 
     @Mock
-    private CourseLevelsRepository courseLevelsRepository;
+    private LevelRepository levelRepository;
 
     @Mock
     private CourseRepository courseRepository;
@@ -36,7 +36,7 @@ class CourseLevelServiceTests {
     private CoursePublisher coursesPublisher;
 
     @InjectMocks
-    private CourseLevelsService courseLevelsService;
+    private LevelService levelService;
 
     @Test
     void shouldCreateCourseLevelSuccessfully() {
@@ -45,16 +45,16 @@ class CourseLevelServiceTests {
         Course course = createCourse(courseId, "Spring Boot Course", CourseLevels.JUNIOR);
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseLevelsRepository.save(any(CourseLevel.class))).thenAnswer(invocation -> {
-            CourseLevel level = invocation.getArgument(0);
+        when(levelRepository.save(any(Level.class))).thenAnswer(invocation -> {
+            Level level = invocation.getArgument(0);
             level.setId(1L);
             return level;
         });
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
         verify(courseRepository).findById(courseId);
-        verify(courseLevelsRepository).save(any(CourseLevel.class));
+        verify(levelRepository).save(any(Level.class));
     }
 
     @Test
@@ -65,12 +65,12 @@ class CourseLevelServiceTests {
         when(courseRepository.findById(courseId)).thenReturn(Optional.empty());
 
         CourseNotFoundException exception = assertThrows(CourseNotFoundException.class, () -> {
-            courseLevelsService.createCourseLevel(courseId, dto);
+            levelService.createCourseLevel(courseId, dto);
         });
 
         assertEquals("Course not found", exception.getMessage());
         verify(courseRepository).findById(courseId);
-        verify(courseLevelsRepository, never()).save(any());
+        verify(levelRepository, never()).save(any());
     }
 
     @Test
@@ -83,12 +83,12 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
-        CourseLevel capturedLevel = levelCaptor.getValue();
+        Level capturedLevel = levelCaptor.getValue();
         assertEquals(levelName, capturedLevel.getName());
         assertEquals(progress, capturedLevel.getProgress());
         assertEquals(course, capturedLevel.getCourse());
@@ -102,10 +102,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
         assertEquals(0, levelCaptor.getValue().getProgress());
     }
@@ -118,10 +118,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
         assertEquals(100, levelCaptor.getValue().getProgress());
     }
@@ -131,14 +131,14 @@ class CourseLevelServiceTests {
         Integer courseId = 1;
         Long levelId = 10L;
         String userId = "user123";
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Intermediate Level", 50, courseId, "Spring Boot", CourseLevels.MEDIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Intermediate Level", 50, courseId, "Spring Boot", CourseLevels.MEDIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
 
-        courseLevelsService.passCourseLevel(courseId, levelId, userId);
+        levelService.passCourseLevel(courseId, levelId, userId);
 
-        verify(courseLevelsRepository).findCourseLevelWithCourse(levelId);
+        verify(levelRepository).findCourseLevelWithCourse(levelId);
         verify(coursesPublisher).courseLevelPublisher(
                 eq(courseId),
                 eq(levelId),
@@ -154,15 +154,15 @@ class CourseLevelServiceTests {
         Long levelId = 999L;
         String userId = "user123";
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
+        when(levelRepository.findCourseLevelWithCourse(levelId))
                 .thenReturn(Optional.empty());
 
         CourseLevelNotFoundException exception = assertThrows(CourseLevelNotFoundException.class, () -> {
-            courseLevelsService.passCourseLevel(courseId, levelId, userId);
+            levelService.passCourseLevel(courseId, levelId, userId);
         });
 
         assertEquals("Could no find this course level", exception.getMessage());
-        verify(courseLevelsRepository).findCourseLevelWithCourse(levelId);
+        verify(levelRepository).findCourseLevelWithCourse(levelId);
         verify(coursesPublisher, never()).courseLevelPublisher(any(), any(), any(), any(), any());
     }
 
@@ -172,12 +172,12 @@ class CourseLevelServiceTests {
         Long levelId = 15L;
         String userId = "user456";
         String courseName = "Advanced Microservices";
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Level 3", 75, courseId, courseName, CourseLevels.SENIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Level 3", 75, courseId, courseName, CourseLevels.SENIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
 
-        courseLevelsService.passCourseLevel(courseId, levelId, userId);
+        levelService.passCourseLevel(courseId, levelId, userId);
 
         verify(coursesPublisher).courseLevelPublisher(
                 eq(courseId),
@@ -194,12 +194,12 @@ class CourseLevelServiceTests {
         Long levelId = 20L;
         String userId = "user789";
         Integer progress = 90;
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Expert Level", progress, courseId, "Test Course", CourseLevels.SENIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Expert Level", progress, courseId, "Test Course", CourseLevels.SENIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
 
-        courseLevelsService.passCourseLevel(courseId, levelId, userId);
+        levelService.passCourseLevel(courseId, levelId, userId);
 
         verify(coursesPublisher).courseLevelPublisher(
                 any(),
@@ -217,14 +217,14 @@ class CourseLevelServiceTests {
         Long levelId2 = 2L;
         String userId = "user123";
 
-        CourseLevel level1 = createCourseLevelWithCourse(levelId1, "Level 1", 25, courseId, "Course", CourseLevels.JUNIOR);
-        CourseLevel level2 = createCourseLevelWithCourse(levelId2, "Level 2", 50, courseId, "Course", CourseLevels.MEDIOR);
+        Level level1 = createCourseLevelWithCourse(levelId1, "Level 1", 25, courseId, "Course", CourseLevels.JUNIOR);
+        Level level2 = createCourseLevelWithCourse(levelId2, "Level 2", 50, courseId, "Course", CourseLevels.MEDIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId1)).thenReturn(Optional.of(level1));
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId2)).thenReturn(Optional.of(level2));
+        when(levelRepository.findCourseLevelWithCourse(levelId1)).thenReturn(Optional.of(level1));
+        when(levelRepository.findCourseLevelWithCourse(levelId2)).thenReturn(Optional.of(level2));
 
-        courseLevelsService.passCourseLevel(courseId, levelId1, userId);
-        courseLevelsService.passCourseLevel(courseId, levelId2, userId);
+        levelService.passCourseLevel(courseId, levelId1, userId);
+        levelService.passCourseLevel(courseId, levelId2, userId);
 
         verify(coursesPublisher, times(2)).courseLevelPublisher(any(), any(), any(), any(), any());
     }
@@ -240,11 +240,11 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto1);
-        courseLevelsService.createCourseLevel(courseId, dto2);
-        courseLevelsService.createCourseLevel(courseId, dto3);
+        levelService.createCourseLevel(courseId, dto1);
+        levelService.createCourseLevel(courseId, dto2);
+        levelService.createCourseLevel(courseId, dto3);
 
-        verify(courseLevelsRepository, times(3)).save(any(CourseLevel.class));
+        verify(levelRepository, times(3)).save(any(Level.class));
     }
 
     @Test
@@ -255,10 +255,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
         assertEquals(course, levelCaptor.getValue().getCourse());
         assertEquals(courseId, levelCaptor.getValue().getCourse().getId());
@@ -271,11 +271,11 @@ class CourseLevelServiceTests {
         Course course = createCourse(courseId, "Test Course", CourseLevels.JUNIOR);
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
-        when(courseLevelsRepository.save(any(CourseLevel.class)))
+        when(levelRepository.save(any(Level.class)))
                 .thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class, () -> {
-            courseLevelsService.createCourseLevel(courseId, dto);
+            levelService.createCourseLevel(courseId, dto);
         });
 
         verify(courseRepository).findById(courseId);
@@ -286,18 +286,18 @@ class CourseLevelServiceTests {
         Integer courseId = 1;
         Long levelId = 10L;
         String userId = "user123";
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Level", 50, courseId, "Course", CourseLevels.JUNIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Level", 50, courseId, "Course", CourseLevels.JUNIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
         doThrow(new RuntimeException("RabbitMQ error"))
                 .when(coursesPublisher).courseLevelPublisher(any(), any(), any(), any(), any());
 
         assertThrows(RuntimeException.class, () -> {
-            courseLevelsService.passCourseLevel(courseId, levelId, userId);
+            levelService.passCourseLevel(courseId, levelId, userId);
         });
 
-        verify(courseLevelsRepository).findCourseLevelWithCourse(levelId);
+        verify(levelRepository).findCourseLevelWithCourse(levelId);
     }
 
     @Test
@@ -308,10 +308,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
         verify(courseRepository, times(1)).findById(courseId);
-        verify(courseLevelsRepository, times(1)).save(any(CourseLevel.class));
+        verify(levelRepository, times(1)).save(any(Level.class));
     }
 
     @Test
@@ -319,14 +319,14 @@ class CourseLevelServiceTests {
         Integer courseId = 1;
         Long levelId = 10L;
         String userId = "user123";
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Level", 50, courseId, "Course", CourseLevels.JUNIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Level", 50, courseId, "Course", CourseLevels.JUNIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
 
-        courseLevelsService.passCourseLevel(courseId, levelId, userId);
+        levelService.passCourseLevel(courseId, levelId, userId);
 
-        verify(courseLevelsRepository, times(1)).findCourseLevelWithCourse(levelId);
+        verify(levelRepository, times(1)).findCourseLevelWithCourse(levelId);
         verify(coursesPublisher, times(1)).courseLevelPublisher(any(), any(), any(), any(), any());
     }
 
@@ -334,14 +334,14 @@ class CourseLevelServiceTests {
     void shouldPassLevelWithDifferentUsers() {
         Integer courseId = 1;
         Long levelId = 10L;
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Level", 50, courseId, "Course", CourseLevels.MEDIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Level", 50, courseId, "Course", CourseLevels.MEDIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
 
-        courseLevelsService.passCourseLevel(courseId, levelId, "user1");
-        courseLevelsService.passCourseLevel(courseId, levelId, "user2");
-        courseLevelsService.passCourseLevel(courseId, levelId, "user3");
+        levelService.passCourseLevel(courseId, levelId, "user1");
+        levelService.passCourseLevel(courseId, levelId, "user2");
+        levelService.passCourseLevel(courseId, levelId, "user3");
 
         verify(coursesPublisher).courseLevelPublisher(eq(courseId), eq(levelId), eq("user1"), any(), any());
         verify(coursesPublisher).courseLevelPublisher(eq(courseId), eq(levelId), eq("user2"), any(), any());
@@ -356,12 +356,12 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
-        CourseLevel saved = levelCaptor.getValue();
+        Level saved = levelCaptor.getValue();
         assertEquals(0, saved.getProgress());
         assertEquals("Minimum Level", saved.getName());
     }
@@ -374,12 +374,12 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
-        CourseLevel saved = levelCaptor.getValue();
+        Level saved = levelCaptor.getValue();
         assertEquals(100, saved.getProgress());
         assertEquals("Maximum Level", saved.getName());
     }
@@ -392,12 +392,12 @@ class CourseLevelServiceTests {
         Integer progress = 65;
         String courseName = "Specific Course Name";
 
-        CourseLevel courseLevel = createCourseLevelWithCourse(levelId, "Level", progress, courseId, courseName, CourseLevels.MEDIOR);
+        Level level = createCourseLevelWithCourse(levelId, "Level", progress, courseId, courseName, CourseLevels.MEDIOR);
 
-        when(courseLevelsRepository.findCourseLevelWithCourse(levelId))
-                .thenReturn(Optional.of(courseLevel));
+        when(levelRepository.findCourseLevelWithCourse(levelId))
+                .thenReturn(Optional.of(level));
 
-        courseLevelsService.passCourseLevel(courseId, levelId, userId);
+        levelService.passCourseLevel(courseId, levelId, userId);
 
         verify(coursesPublisher).courseLevelPublisher(
                 eq(courseId),
@@ -416,10 +416,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
         assertEquals(CourseLevels.JUNIOR, levelCaptor.getValue().getCourse().getLevel());
     }
@@ -432,10 +432,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
         assertEquals(CourseLevels.MEDIOR, levelCaptor.getValue().getCourse().getLevel());
     }
@@ -448,10 +448,10 @@ class CourseLevelServiceTests {
 
         when(courseRepository.findById(courseId)).thenReturn(Optional.of(course));
 
-        courseLevelsService.createCourseLevel(courseId, dto);
+        levelService.createCourseLevel(courseId, dto);
 
-        ArgumentCaptor<CourseLevel> levelCaptor = ArgumentCaptor.forClass(CourseLevel.class);
-        verify(courseLevelsRepository).save(levelCaptor.capture());
+        ArgumentCaptor<Level> levelCaptor = ArgumentCaptor.forClass(Level.class);
+        verify(levelRepository).save(levelCaptor.capture());
 
         assertEquals(CourseLevels.SENIOR, levelCaptor.getValue().getCourse().getLevel());
     }
@@ -471,10 +471,10 @@ class CourseLevelServiceTests {
         return course;
     }
 
-    private CourseLevel createCourseLevelWithCourse(Long levelId, String levelName, Integer progress, Integer courseId, String courseName, CourseLevels courseLevel) {
+    private Level createCourseLevelWithCourse(Long levelId, String levelName, Integer progress, Integer courseId, String courseName, CourseLevels courseLevel) {
         Course course = createCourse(courseId, courseName, courseLevel);
 
-        return CourseLevel.builder()
+        return Level.builder()
                 .id(levelId)
                 .name(levelName)
                 .progress(progress)

@@ -29,11 +29,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(authorize -> authorize
-                        // Allow actuator endpoints
                         .requestMatchers("/actuator/**").permitAll()
-                        // Allow public endpoints (if any)
-                        .requestMatchers("/api/users/public/**").permitAll()
-                        // All other requests require authentication
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))

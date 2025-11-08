@@ -2,6 +2,7 @@ package com.kujacic.users.controller;
 
 import com.kujacic.users.dto.progress.ProgressRequestDTO;
 import com.kujacic.users.dto.progress.ProgressResponseDTO;
+import com.kujacic.users.enums.FileFormats;
 import com.kujacic.users.service.ProgressService;
 import com.kujacic.users.util.DocumentUtils;
 import jakarta.validation.Valid;
@@ -30,6 +31,6 @@ public class ProgressController {
     public ResponseEntity<byte[]> exportUserProgress(@AuthenticationPrincipal Jwt jwt) {
         byte[] file = progressService.exportProgress(jwt.getClaimAsString("sub"));
         return ResponseEntity.ok().header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\" " + DocumentUtils.formatDocumentName(jwt) + ".xlsx\"").contentType(MediaType.parseMediaType(
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")).contentLength(file.length).body(file);
+                "\" " + FileFormats.SPREADSHEET + " \"")).contentLength(file.length).body(file);
     }
 }

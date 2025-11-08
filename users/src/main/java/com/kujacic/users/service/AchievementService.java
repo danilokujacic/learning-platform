@@ -20,7 +20,6 @@ public class AchievementService {
     }
 
     public List<Achievement> getUserAchievements(String userId) {
-        List<Achievement> achievements = achievementRepository.findAllAchievementsByUserId(userId).orElseThrow(() -> new RuntimeException("No achievements found"));
-        return achievements;
+        return achievementRepository.findAllAchievementsByUserId(userId).orElseThrow(() -> new RuntimeException("No achievements found"));
     }
 }
