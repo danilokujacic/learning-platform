@@ -5,27 +5,13 @@ spring:
   application:
     name: user-service
   config:
-    import: optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}
-  # User Service Database
+    import: optional:configserver:http://config
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/users
+    url: ${JDBC_CONNECTION_STRING}/users
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
-
-  # JPA specific for user-service
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
 
 eureka:
   instance:
     instance-id: ${spring.application.name}:${random.value}
-    metadata-map:
-      zone: zone1
-
-logging:
-  level:
-    com.example.userservice: DEBUG
-    org.hibernate.SQL: DEBUG
