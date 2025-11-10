@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class CourseCertificate {
+public class Certificate {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

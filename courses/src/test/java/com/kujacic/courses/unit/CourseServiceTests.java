@@ -5,7 +5,7 @@ import com.kujacic.courses.dto.course.CourseResponseDTO;
 import com.kujacic.courses.dto.courseLevel.CourseLevelResponse;
 import com.kujacic.courses.exception.CourseNotFoundException;
 import com.kujacic.courses.model.Course;
-import com.kujacic.courses.model.CourseLevel;
+import com.kujacic.courses.model.Level;
 import com.kujacic.courses.repository.CourseRepository;
 import com.kujacic.courses.service.CourseService;
 import org.junit.jupiter.api.Test;
@@ -50,7 +50,7 @@ public class CourseServiceTests {
         Course dummyCourse = Course.builder()
                 .id(courseId)
                 .name("Test Course")
-                .courseLevels(new ArrayList<>())
+                .levels(new ArrayList<>())
                 .build();
 
         when(courseRepository.findCourseByIdWithLevels(courseId)).thenReturn(Optional.of(dummyCourse));
@@ -78,7 +78,7 @@ public class CourseServiceTests {
     void shouldGetCourseWithEmptyLevels() {
         Integer courseId = 1;
         Course course = createCourse(courseId, "Empty Course");
-        course.setCourseLevels(new ArrayList<>());
+        course.setLevels(new ArrayList<>());
 
         when(courseRepository.findCourseByIdWithLevels(courseId)).thenReturn(Optional.of(course));
 
@@ -252,11 +252,11 @@ public class CourseServiceTests {
         Integer courseId = 1;
         Course course = createCourse(courseId, "Test Course");
 
-        CourseLevel level1 = createCourseLevel(10L, "Beginner Level");
-        CourseLevel level2 = createCourseLevel(20L, "Intermediate Level");
-        CourseLevel level3 = createCourseLevel(30L, "Expert Level");
+        Level level1 = createCourseLevel(10L, "Beginner Level");
+        Level level2 = createCourseLevel(20L, "Intermediate Level");
+        Level level3 = createCourseLevel(30L, "Expert Level");
 
-        course.setCourseLevels(List.of(level1, level2, level3));
+        course.setLevels(List.of(level1, level2, level3));
 
         when(courseRepository.findCourseByIdWithLevels(courseId)).thenReturn(Optional.of(course));
 
@@ -299,12 +299,12 @@ public class CourseServiceTests {
         Course course = new Course();
         course.setId(id);
         course.setName(name);
-        course.setCourseLevels(new ArrayList<>());
+        course.setLevels(new ArrayList<>());
         return course;
     }
 
-    private CourseLevel createCourseLevel(Long id, String name) {
-        CourseLevel level = new CourseLevel();
+    private Level createCourseLevel(Long id, String name) {
+        Level level = new Level();
         level.setId(id);
         level.setName(name);
         return level;

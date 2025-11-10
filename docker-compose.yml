@@ -11,6 +11,19 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBIT_MQ_USERNAME}
       RABBITMQ_DEFAULT_PASS: ${RABBIT_MQ_PASSWORD}
+
+  config:
+    build:
+      context: ./config
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-repo:/config
+    env_file:
+      - .env
+    networks:
+      - keycloak-network
   keycloak:
     image: quay.io/keycloak/keycloak:26.4.0
     container_name: keycloak
@@ -18,8 +31,8 @@ services:
       - keycloak_data:/opt/keycloak/data
       - ./realms:/opt/keycloak/data/import
     environment:
-      KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_PASSWORD}
     ports:
       - "8080:8080"
     command: start-dev

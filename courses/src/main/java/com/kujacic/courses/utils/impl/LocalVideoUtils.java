@@ -21,7 +21,6 @@ import java.util.List;
  * Provides utility methods for video validation and metadata extraction from local storage.
  */
 @Slf4j
-@Component
 public class LocalVideoUtils implements VideoUtils {
 
     @Value("${video.storage.path:./videos}")

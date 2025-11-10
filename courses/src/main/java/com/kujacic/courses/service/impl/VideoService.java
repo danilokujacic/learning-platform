@@ -24,7 +24,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-@Service
 @RequiredArgsConstructor
 @Slf4j
 public class VideoService implements StorageService {

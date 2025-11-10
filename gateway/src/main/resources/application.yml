@@ -1,7 +1,9 @@
 server:
   port: 8081
 
-spring: # Fixed indentation
+spring:
+  config:
+    import: optional:configserver:${CONFIG_URL}
   application:
     name: api-gateway
 
@@ -32,58 +34,10 @@ spring: # Fixed indentation
             - TokenRelay=
             - RemoveRequestHeader=Cookie
 
-      # Default filters applied to all routes
       default-filters:
         - TokenRelay=
         - RemoveRequestHeader=Cookie
 
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: gateway-client
-            client-secret: ${GATEWAY_CLIENT_SECRET}  # Fixed: $ instead of nothing
-            scope:
-              - openid
-              - profile
-              - email
-            authorization-grant-type: authorization_code
-            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
-        provider:
-          keycloak:
-            issuer-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
-            user-name-attribute: preferred_username
-
-      resourceserver:
-        jwt:
-          issuer-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}
-          jwk-set-uri: ${KEYCLOAK_BASE_URL}/realms/${KEYCLOAK_REALM}/protocol/openid-connect/certs
-
-# Eureka Client Configuration
 eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
   instance:
-    prefer-ip-address: true
     instance-id: ${spring.application.name}:${random.value}
-    lease-renewal-interval-in-seconds: 10
-    lease-expiration-duration-in-seconds: 30
-
-# Actuator Configuration
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,gateway,routes
-  endpoint:
-    health:
-      show-details: always
-
-# Logging Configuration
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG

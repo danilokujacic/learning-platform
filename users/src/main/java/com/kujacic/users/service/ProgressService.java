@@ -24,6 +24,16 @@ public class ProgressService {
     private final ProgressRepository progressRepository;
 
 
+    public List<ProgressResponseDTO> getAllProgressesByUserId(String userId) {
+        List<Progress> progressesByUser = progressRepository.findByUserId(userId);
+
+        return progressesByUser.stream().map(progress -> ProgressResponseDTO.builder()
+                .userId(progress.getUserId())
+                .progress(progress.getProgress())
+                .courseId(progress.getCourseId())
+                .build()).collect(Collectors.toList());
+    }
+
     public byte[] exportProgress(String userId) {
         List<Progress> progresses = progressRepository.findByUserId(userId);
         try {

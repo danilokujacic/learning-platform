@@ -4,26 +4,19 @@ server:
 spring:
   application:
     name: user-service
+  config:
+    import: optional:configserver:http://config
+
   datasource:
-    driver-class-name: org.postgresql.Driver
-  # JPA specific for user-service
+    url: ${DATABASE_URL}/users
+    username: ${DATABASE_USERNAME}
+    password: ${DATABASE_PASSWORD}
+
   jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: create-drop
     properties:
       hibernate:
-        format_sql: true
-      show-sql: true
-
+        ddl-auto: create-drop
 
 eureka:
   instance:
     instance-id: ${spring.application.name}:${random.value}
-    metadata-map:
-      zone: zone1
-
-logging:
-  level:
-    com.example.userservice: DEBUG
-    org.hibernate.SQL: DEBUG

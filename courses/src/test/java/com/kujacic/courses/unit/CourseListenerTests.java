@@ -5,8 +5,8 @@ import com.kujacic.courses.dto.course.CourseResponseDTO;
 import com.kujacic.courses.dto.rabbitmq.CertificateRequest;
 import com.kujacic.courses.dto.rabbitmq.CourseCertificateIssuedEvent;
 import com.kujacic.courses.model.Course;
-import com.kujacic.courses.model.CourseCertificate;
-import com.kujacic.courses.repository.CourseCertificateRepository;
+import com.kujacic.courses.model.Certificate;
+import com.kujacic.courses.repository.CertificateRepository;
 import com.kujacic.courses.service.CourseListener;
 import com.kujacic.courses.service.CoursePublisher;
 import org.junit.jupiter.api.Test;
@@ -26,7 +26,7 @@ import static org.mockito.Mockito.*;
 class CourseListenerTests {
 
     @Mock
-    private CourseCertificateRepository courseCertificateRepository;
+    private CertificateRepository certificateRepository;
 
     @Mock
     private CoursePublisher coursesPublisher;
@@ -39,14 +39,14 @@ class CourseListenerTests {
         Integer courseId = 1;
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, "Spring Boot Course");
+        Certificate certificate = createCourseCertificate(1L, courseId, "Spring Boot Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
 
-        verify(courseCertificateRepository).findByCourseId(courseId);
+        verify(certificateRepository).findByCourseId(courseId);
         verify(coursesPublisher).courseCertificatePublisher(any(CourseCertificateIssuedEvent.class));
     }
 
@@ -56,12 +56,12 @@ class CourseListenerTests {
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.empty());
 
         courseListener.certificateRequestListener(request);
 
-        verify(courseCertificateRepository).findByCourseId(courseId);
+        verify(certificateRepository).findByCourseId(courseId);
         verify(coursesPublisher, never()).courseCertificatePublisher(any());
     }
 
@@ -73,9 +73,9 @@ class CourseListenerTests {
         String courseName = "Advanced Java";
 
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(certificateId, courseId, courseName);
+        Certificate certificate = createCourseCertificate(certificateId, courseId, courseName);
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -100,9 +100,9 @@ class CourseListenerTests {
         String courseName = "Microservices Architecture";
 
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, courseName);
+        Certificate certificate = createCourseCertificate(1L, courseId, courseName);
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -124,13 +124,13 @@ class CourseListenerTests {
         CertificateRequest request2 = createCertificateRequest(2, "user2");
         CertificateRequest request3 = createCertificateRequest(3, "user3");
 
-        CourseCertificate cert1 = createCourseCertificate(1L, 1, "Course 1");
-        CourseCertificate cert2 = createCourseCertificate(2L, 2, "Course 2");
-        CourseCertificate cert3 = createCourseCertificate(3L, 3, "Course 3");
+        Certificate cert1 = createCourseCertificate(1L, 1, "Course 1");
+        Certificate cert2 = createCourseCertificate(2L, 2, "Course 2");
+        Certificate cert3 = createCourseCertificate(3L, 3, "Course 3");
 
-        when(courseCertificateRepository.findByCourseId(1)).thenReturn(Optional.of(cert1));
-        when(courseCertificateRepository.findByCourseId(2)).thenReturn(Optional.of(cert2));
-        when(courseCertificateRepository.findByCourseId(3)).thenReturn(Optional.of(cert3));
+        when(certificateRepository.findByCourseId(1)).thenReturn(Optional.of(cert1));
+        when(certificateRepository.findByCourseId(2)).thenReturn(Optional.of(cert2));
+        when(certificateRepository.findByCourseId(3)).thenReturn(Optional.of(cert3));
 
         courseListener.certificateRequestListener(request1);
         courseListener.certificateRequestListener(request2);
@@ -145,12 +145,12 @@ class CourseListenerTests {
         CertificateRequest request2 = createCertificateRequest(999, "user2");
         CertificateRequest request3 = createCertificateRequest(3, "user3");
 
-        CourseCertificate cert1 = createCourseCertificate(1L, 1, "Course 1");
-        CourseCertificate cert3 = createCourseCertificate(3L, 3, "Course 3");
+        Certificate cert1 = createCourseCertificate(1L, 1, "Course 1");
+        Certificate cert3 = createCourseCertificate(3L, 3, "Course 3");
 
-        when(courseCertificateRepository.findByCourseId(1)).thenReturn(Optional.of(cert1));
-        when(courseCertificateRepository.findByCourseId(999)).thenReturn(Optional.empty());
-        when(courseCertificateRepository.findByCourseId(3)).thenReturn(Optional.of(cert3));
+        when(certificateRepository.findByCourseId(1)).thenReturn(Optional.of(cert1));
+        when(certificateRepository.findByCourseId(999)).thenReturn(Optional.empty());
+        when(certificateRepository.findByCourseId(3)).thenReturn(Optional.of(cert3));
 
         courseListener.certificateRequestListener(request1);
         courseListener.certificateRequestListener(request2);
@@ -165,9 +165,9 @@ class CourseListenerTests {
         String userId = "specificUser123";
 
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, "Test Course");
+        Certificate certificate = createCourseCertificate(1L, courseId, "Test Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -184,9 +184,9 @@ class CourseListenerTests {
     void shouldHandleNullUserId() {
         Integer courseId = 1;
         CertificateRequest request = createCertificateRequest(courseId, null);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, "Test Course");
+        Certificate certificate = createCourseCertificate(1L, courseId, "Test Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -204,14 +204,14 @@ class CourseListenerTests {
         Integer courseId = 1;
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, "Test Course");
+        Certificate certificate = createCourseCertificate(1L, courseId, "Test Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
 
-        verify(courseCertificateRepository, times(1)).findByCourseId(courseId);
+        verify(certificateRepository, times(1)).findByCourseId(courseId);
     }
 
     @Test
@@ -219,9 +219,9 @@ class CourseListenerTests {
         Integer courseId = 1;
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, "Test Course");
+        Certificate certificate = createCourseCertificate(1L, courseId, "Test Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -235,7 +235,7 @@ class CourseListenerTests {
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenThrow(new RuntimeException("Database error"));
 
         assertThrows(RuntimeException.class, () -> {
@@ -250,9 +250,9 @@ class CourseListenerTests {
         Integer courseId = 1;
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(1L, courseId, "Test Course");
+        Certificate certificate = createCourseCertificate(1L, courseId, "Test Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         doThrow(new RuntimeException("RabbitMQ error"))
@@ -262,7 +262,7 @@ class CourseListenerTests {
             courseListener.certificateRequestListener(request);
         });
 
-        verify(courseCertificateRepository).findByCourseId(courseId);
+        verify(certificateRepository).findByCourseId(courseId);
     }
 
     @Test
@@ -273,7 +273,7 @@ class CourseListenerTests {
         String courseName = "Complete Course";
 
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificateWithAllFields(
+        Certificate certificate = createCourseCertificateWithAllFields(
                 certificateId,
                 courseId,
                 courseName,
@@ -281,7 +281,7 @@ class CourseListenerTests {
                 "https://example.com/cert/99"
         );
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -303,17 +303,17 @@ class CourseListenerTests {
         CertificateRequest request1 = createCertificateRequest(100, "user1");
         CertificateRequest request2 = createCertificateRequest(200, "user2");
 
-        CourseCertificate cert1 = createCourseCertificate(1L, 100, "Course 100");
-        CourseCertificate cert2 = createCourseCertificate(2L, 200, "Course 200");
+        Certificate cert1 = createCourseCertificate(1L, 100, "Course 100");
+        Certificate cert2 = createCourseCertificate(2L, 200, "Course 200");
 
-        when(courseCertificateRepository.findByCourseId(100)).thenReturn(Optional.of(cert1));
-        when(courseCertificateRepository.findByCourseId(200)).thenReturn(Optional.of(cert2));
+        when(certificateRepository.findByCourseId(100)).thenReturn(Optional.of(cert1));
+        when(certificateRepository.findByCourseId(200)).thenReturn(Optional.of(cert2));
 
         courseListener.certificateRequestListener(request1);
         courseListener.certificateRequestListener(request2);
 
-        verify(courseCertificateRepository).findByCourseId(100);
-        verify(courseCertificateRepository).findByCourseId(200);
+        verify(certificateRepository).findByCourseId(100);
+        verify(certificateRepository).findByCourseId(200);
         verify(coursesPublisher, times(2)).courseCertificatePublisher(any());
     }
 
@@ -323,7 +323,7 @@ class CourseListenerTests {
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.empty());
 
         courseListener.certificateRequestListener(request);
@@ -336,9 +336,9 @@ class CourseListenerTests {
         Integer courseId = 1;
         String userId = "user123";
         CertificateRequest request = createCertificateRequest(courseId, userId);
-        CourseCertificate certificate = createCourseCertificate(5L, courseId, "Test Course");
+        Certificate certificate = createCourseCertificate(5L, courseId, "Test Course");
 
-        when(courseCertificateRepository.findByCourseId(courseId))
+        when(certificateRepository.findByCourseId(courseId))
                 .thenReturn(Optional.of(certificate));
 
         courseListener.certificateRequestListener(request);
@@ -364,18 +364,18 @@ class CourseListenerTests {
         return request;
     }
 
-    private CourseCertificate createCourseCertificate(Long id, Integer courseId, String courseName) {
+    private Certificate createCourseCertificate(Long id, Integer courseId, String courseName) {
         Course course = new Course();
         course.setId(courseId);
         course.setName(courseName);
 
-        return CourseCertificate.builder()
+        return Certificate.builder()
                 .id(id)
                 .course(course)
                 .build();
     }
 
-    private CourseCertificate createCourseCertificateWithAllFields(
+    private Certificate createCourseCertificateWithAllFields(
             Long id,
             Integer courseId,
             String courseName,
@@ -386,7 +386,7 @@ class CourseListenerTests {
         course.setId(courseId);
         course.setName(courseName);
 
-        return CourseCertificate.builder()
+        return Certificate.builder()
                 .id(id)
                 .name(certificateName)
                 .course(course)

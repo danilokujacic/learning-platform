@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CourseLevel {
+public class Level {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,8 +21,8 @@ public class CourseLevel {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @OneToMany(mappedBy = "courseLevel", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<CourseContent> courseContents;
+    @OneToMany(mappedBy = "level", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Content> contents;
 
     @Column
     private String name;

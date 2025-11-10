@@ -9,13 +9,11 @@ eureka:
   instance:
     hostname: localhost
   client:
-    # Don't register this Eureka server as a client
-    register-with-eureka: false
-    fetch-registry: false
+    register-with-eureka: true
+    fetch-registry: true
     service-url:
       defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
   server:
-    # Development settings - disable self-preservation
     enable-self-preservation: false
     eviction-interval-timer-in-ms: 4000
 
