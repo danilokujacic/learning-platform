@@ -44,7 +44,7 @@ public class CourseFactory {
 
     public CourseCertificateIssuedEvent createCourseCertificateIssuedEvent() {
         CourseResponseDTO course = new CourseResponseDTO();
-        course.setCourseId(1);
+        course.setId(1);
 
         CourseCertificateIssuedEvent event = new CourseCertificateIssuedEvent();
         event.setId(1L);

@@ -21,6 +21,6 @@ public class Content {
     private String url;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "course_level")
+    @JoinColumn(name = "level_id")
     private Level level;
 }

@@ -21,7 +21,7 @@ public class Level {
     @JoinColumn(name = "course_id")
     private Course course;
 
-    @OneToMany(mappedBy = "courseLevel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "level", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Content> contents;
 
     @Column

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface CertificateRepository extends JpaRepository<Certificate,Long> {
 
-    @Query("SELECT cc FROM CourseCertificate cc JOIN FETCH cc.course WHERE cc.course.id = :courseId")
+    @Query("SELECT cc FROM Certificate cc JOIN FETCH cc.course WHERE cc.course.id = :courseId")
     Optional<Certificate> findByCourseId(Integer courseId);
 
     void deleteById(Long certificateId);

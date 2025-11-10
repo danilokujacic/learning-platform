@@ -16,7 +16,6 @@ import software.amazon.awssdk.services.s3.model.S3Exception;
 import java.util.Arrays;
 import java.util.List;
 
-@Component
 @Slf4j
 @RequiredArgsConstructor
 public class S3VideoUtils implements VideoUtils {

@@ -5,10 +5,10 @@ spring:
   application:
     name: user-service
   config:
-    import: optional:configserver:http://config
+    import: optional:configserver:${CONFIG_URL}
 
   datasource:
-    url: ${JDBC_CONNECTION_STRING}/users
+    url: ${DATABASE_URL}/users
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 

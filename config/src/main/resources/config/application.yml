@@ -29,6 +29,8 @@ spring:
     driver-class-name: org.postgresql.Driver
 
   jpa:
+    hibernate:
+      ddl-auto: update
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
@@ -47,7 +49,7 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://eureka-server/eureka/
+      defaultZone: http://${EUREKA_BASE_URL}:${EUREKA_PORT}/eureka/
     register-with-eureka: true
     fetch-registry: true
   instance:

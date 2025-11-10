@@ -9,9 +9,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ContentRepository extends JpaRepository<Content, UUID> {
-    @Query("SELECT cc FROM CourseContent cc JOIN FETCH cc.courseLevel WHERE cc.id = :id")
+    @Query("SELECT cc FROM Content cc JOIN FETCH cc.level WHERE cc.id = :id")
     Optional<Content> findByIdWithCourse(@Param("id") UUID id);
 
-    @Query("SELECT COUNT(cc) > 0 FROM CourseContent cc WHERE cc.courseLevel.id = :id")
+    @Query("SELECT COUNT(cc) > 0 FROM Content cc WHERE cc.level.id = :id")
     Boolean existByCourseLevelId(@Param("id") Long id);
 }

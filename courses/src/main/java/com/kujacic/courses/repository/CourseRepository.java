@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface CourseRepository extends JpaRepository<Course, Integer> {
-    @Query("SELECT c FROM Course c LEFT JOIN FETCH c.courseLevels WHERE c.id = :id")
+    @Query("SELECT c FROM Course c LEFT JOIN FETCH c.levels WHERE c.id = :id")
     Optional<Course> findCourseByIdWithLevels(@Param("id") Integer id);
 
     @Query("SELECT c FROM Course c WHERE c.id IN :ids")

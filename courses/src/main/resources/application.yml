@@ -23,7 +23,7 @@ spring:
     import: optional:configserver:${CONFIG_SERVER_URI:http://localhost:8888}
 
   datasource:
-    url: ${JDBC_CONNECTION_STRING}/courses
+    url: ${DATABASE_URL}/courses
     username: ${DATABASE_USERNAME}
     password: ${DATABASE_PASSWORD}
 
